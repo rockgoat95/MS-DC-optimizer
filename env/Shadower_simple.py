@@ -4,7 +4,7 @@ import numpy as np
 
 class shadowerEnvSimple(gym.Env):
     
-    def __init__(self, FRAME, main_stat, sub_stat, damage, boss_damage, critical_damage, att_p, defense_ignore, final_damage, boss_defense, dealing_time):
+    def __init__(self, FRAME, main_stat, sub_stat, damage, boss_damage, critical_damage, att_p, defense_ignore, final_damage, boss_defense,buff_indure_time, dealing_time):
         super(shadowerEnvSimple, self).__init__()
         
         self.penalty = -0.10
@@ -17,7 +17,9 @@ class shadowerEnvSimple(gym.Env):
         self._att_p = att_p
         self._defense_ignore = defense_ignore
         self._final_damage = final_damage
+        self._buff_indure_time = buff_indure_time
         
+        # for learning 
         self.FRAME = FRAME
         self.main_stat = main_stat
         self.sub_stat = sub_stat
@@ -28,45 +30,18 @@ class shadowerEnvSimple(gym.Env):
         self.defense_ignore = defense_ignore
         self.final_damage = final_damage
         self.boss_defense = boss_defense
+        self.buff_indure_time = buff_indure_time
         
         ## for learning
         self.current_time = 0
         
-        self.dealing_time = dealing_time*FRAME # 2분 * 프레임 수 
+        self.dealing_time = dealing_time*FRAME # 딜 타임 * 프레임 수 
         self.delay = 0 
             
         ##stat
         
-        self.buff_indure_time = 20
         
-        ## skill order
-        ## buff or time-consuming att
-        self.ultimate_dark_sight_activation_time = 0
-        self.soul_contract_activation_time = 0
-        self.restraint_ring_activation_time = 0
-        self.weaponpuff_ring_activation_time = 0
-        self.vail_of_shadow_activation_time = 0        
-        self.smoke_shell_activation_time = 0        
-        self.epic_adventure_activation_time = 0  
-        self.vail_of_shadow_activation_time = 0   
-        self.maple_world_goddess_blessing_activation_time = 0
-        self.spyder_in_mirror_activation_time = 0
-        self.ready_to_die_activation_time = 0
         
-        ## buff or time-consuming att
-        self.ready_to_die_cool_time = 0
-        self.sonic_blow_cool_time = 0
-        self.ultimate_dark_sight_cool_time = 0
-        self.soul_contract_cool_time = 0
-        self.restraint_ring_cool_time = 0
-        self.weaponpuff_ring_cool_time = 0
-        self.vail_of_shadow_cool_time = 0        
-        self.smoke_shell_cool_time = 0        
-        self.epic_adventure_cool_time = 0     
-        self.maple_world_goddess_blessing_cool_time = 0
-        self.spyder_in_mirror_cool_time = 0
-        self.slash_shadow_formation_cool_time = 0
-        self.incision_cool_time = 0
         
         
         
@@ -149,8 +124,7 @@ class shadowerEnvSimple(gym.Env):
     def step(self, action):
                       
         self.current_time += 1
-        self.delay -= 1
-        self.delay = max(0 , self.delay)
+        self.delay = max(0 , self.delay - 1)
         
         self.step_reward = 0
         
@@ -161,13 +135,13 @@ class shadowerEnvSimple(gym.Env):
         elif action == 2:
             self.incision()
         elif action == 3:
-            self.vail_of_shadow() # 버프 ?
+            self.vail_of_shadow() 
         elif action == 4:
             self.smoke_shell()
         elif action == 5:
-            self.epic_adventure() # 버프 
+            self.epic_adventure() 
         elif action ==6:
-            self.null_action()
+            self.null_action() # 평타 
             
                    
         if self.current_time % (182*self.FRAME) == 1:
@@ -272,7 +246,7 @@ class shadowerEnvSimple(gym.Env):
                       
         return (self.state, self.step_reward, ep_done, {})
         
-    def incision(self): ###암살하고 쓰면 암살 선딜 후에 시작됨 
+    def incision(self): 
         if self.incision_cool_time > 0:
             self.step_reward += self.penalty 
             return None
@@ -289,7 +263,6 @@ class shadowerEnvSimple(gym.Env):
         self.step_reward += line_damage*num_of_att + line_damage*num_of_att*0.7 
         
         self.incision_cool_time = self.cool_time_modifier(20*self.FRAME, 5)
-        self.current_skill = 'incision'
         
     def sonic_blow(self):
         if self.sonic_blow_cool_time > 0:
@@ -322,7 +295,6 @@ class shadowerEnvSimple(gym.Env):
         line_damage = self.skill_damage_calculator(ability_dict)
         self.step_reward += 60* line_damage
 
-        self.current_skill = 'slash_shadow_formation'
         self.slash_shadow_formation_cool_time = self.cool_time_modifier(90*self.FRAME, 5)
         return None
         
@@ -358,15 +330,7 @@ class shadowerEnvSimple(gym.Env):
         self.soul_contract_cool_time = self.cool_time_modifier(90*self.FRAME, 5)
         return None
     
-    def maple_world_goddess_blessing(self): #수치조정 
-        # if self.maple_world_goddess_blessing_cool_time > 0 or self.delay > 0:
-        #     # ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 1100,
-        #     #             'critical_damage': self.critical_damage, 'damage': self.damage, 'att_p': self.att_p,
-        #     #             'boss_damage' : self.boss_damage, 'defense_ignore': 100, 'final_damage': self.final_damage,
-        #     #             'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-        #     # line_damage = skill_damage_calculator(ability_dict)
-        #     # self.step_reward -= 1130.5/(45*self.FRAME)* line_damage # 소닉블로우에 대한 암암메의 프레임당 기대데미지  
-        #     return None
+    def maple_world_goddess_blessing(self):
         self.current_skill = 'maple_world_goddess_blessing'
         self.maple_world_goddess_blessing_activation_time = 60*self.FRAME
         self.maple_world_goddess_blessing_cool_time = self.cool_time_modifier(180*self.FRAME, 5)
@@ -374,16 +338,7 @@ class shadowerEnvSimple(gym.Env):
         self.main_stat = self.main_stat + 4265
         return None
     
-    def weaponpuff_ring(self): # 숨돌리기 시간추가 
-        # if self.weaponpuff_ring_cool_time > 0 or self.delay > 0:
-        #     # ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 1100,
-        #     #             'critical_damage': self.critical_damage, 'damage': self.damage, 'att_p': self.att_p,
-        #     #             'boss_damage' : self.boss_damage, 'defense_ignore': 100, 'final_damage': self.final_damage,
-        #     #             'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-        #     # line_damage = skill_damage_calculator(ability_dict)
-        #     # self.step_reward -= 1130.5/(45*self.FRAME)* line_damage # 소닉블로우에 대한 암암메의 프레임당 기대데미지  
-        #     return None
-
+    def weaponpuff_ring(self):
         self.weaponpuff_ring_activation_time = int(15*self.FRAME)
         self.current_skill = 'weaponpuff_ring'
         self.main_stat = self.main_stat + 14480
@@ -391,22 +346,14 @@ class shadowerEnvSimple(gym.Env):
         self.weaponpuff_ring_cool_time = 180*self.FRAME
         return None
     
-    def restraint_ring(self): # 숨돌리기 시간추가  
-        # if self.restraint_ring_cool_time > 0 or self.delay > 0:
-        #     # ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 1100,
-        #     #             'critical_damage': self.critical_damage, 'damage': self.damage, 'att_p': self.att_p,
-        #     #             'boss_damage' : self.boss_damage, 'defense_ignore': 100, 'final_damage': self.final_damage,
-        #     #             'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-        #     # line_damage = skill_damage_calculator(ability_dict)
-        #     # self.step_reward -= 1130.5/(45*self.FRAME)* line_damage # 소닉블로우에 대한 암암메의 프레임당 기대데미지  
-        #     return None
+    def restraint_ring(self):
         self.restraint_ring_activation_time = int(15*self.FRAME)
         self.current_skill = 'restraint_ring'
         self.att_p = self.att_p + 100
         self.restraint_ring_cool_time = 180*self.FRAME
         return None
     
-    def epic_adventure(self): # 숨돌리기 시간추가  
+    def epic_adventure(self): 
         if self.epic_adventure_cool_time > 0:
             self.step_reward += self.penalty  
             return None
@@ -417,10 +364,7 @@ class shadowerEnvSimple(gym.Env):
         return None
     
     
-    def ultimate_dark_sight(self): #0.9 초 준비 1.6초동안 순수 7타 1.6
-        # if self.ultimate_dark_sight_cool_time > 0:
-        #     self.step_reward += self.penalty 
-        #     return None
+    def ultimate_dark_sight(self):
         self.current_skill = 'ultimate_dark_sight'
         self.ultimate_dark_sight_activation_time = 30*self.FRAME
         self.ultimate_dark_sight_cool_time = self.cool_time_modifier(190*self.FRAME, 5)  
@@ -464,12 +408,6 @@ class shadowerEnvSimple(gym.Env):
     
     def spyder_in_mirror(self):
         if self.spyder_in_mirror_cool_time > 0:
-            # ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 1100,
-            #             'critical_damage': self.critical_damage, 'damage': self.damage, 'att_p': self.att_p,
-            #             'boss_damage' : self.boss_damage, 'defense_ignore': 100, 'final_damage': self.final_damage,
-            #             'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-            # line_damage = skill_damage_calculator(ability_dict)
-            # self.step_reward -= 1130.5/(45*self.FRAME)* line_damage # 소닉블로우에 대한 암암메의 프레임당 기대데미지  
             return None
             
         self.current_skill = 'spyder_in_mirror'
@@ -499,7 +437,7 @@ class shadowerEnvSimple(gym.Env):
         ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 490,
                         'critical_damage': self.critical_damage, 'damage': self.damage+20, 'att_p': self.att_p,
                         'boss_damage' : self.boss_damage+20, 'defense_ignore': self.defense_ignore_calculator([self.defense_ignore, 28]),
-                        'final_damage': self. final_damage_applier(self.final_damage,50),
+                        'final_damage': self.final_damage_applier(self.final_damage,50),
                         'core_final_damage': 120, 'boss_defense' : self.boss_defense,'critical' : True}
         line_damage2 = 6* 1.7*self.skill_damage_calculator(ability_dict)
 
@@ -510,7 +448,8 @@ class shadowerEnvSimple(gym.Env):
                         'core_final_damage': 180, 'boss_defense' : self.boss_defense,'critical' : True}
         line_damage3 = 9.6*2* 1.7*self.skill_damage_calculator(ability_dict)
 
-        self.step_reward +=  36*(line_damage + line_damage2 +line_damage3)/ (30*self.FRAME) *0.99
+        # 암암메 최대 분당 타수 36을 참고하여 한번에 계산 
+        self.step_reward +=  36*(line_damage + line_damage2 +line_damage3)/ (60*self.FRAME) *0.90
         return None
     
     
@@ -553,12 +492,13 @@ class shadowerEnvSimple(gym.Env):
         else:
             return (final_damage_val *100/(add_final_damage+100) - 100)
         
-    def buff_time_modifier(self, buff_time, time_amount):
-        return int(buff_time*(100+time_amount)/100)
+    def buff_time_modifier(self, buff_time, buff_time_endure):
+        return int(buff_time*(100+buff_time_endure)/100)
         
 
-    def cool_time_modifier(self, cool_time, time_amount):
-        return int(cool_time*(100-time_amount)/100)
+    def cool_time_modifier(self, cool_time, reduce_cool_time):
+        
+        return int(cool_time*(100-reduce_cool_time)/100)
 
     def defense_ignore_calculator(self, defense_ignore_list):
         defense = 100 
@@ -566,5 +506,6 @@ class shadowerEnvSimple(gym.Env):
             defense = defense * (100-di)/100
         return 100- defense
     
+
     
                 
