@@ -2,6 +2,8 @@ import gym
 from gym import spaces, utils
 import numpy as np
 
+from common.utils import *
+
 class shadowerEnvSimple(gym.Env):
     
     def __init__(self, FRAME, main_stat, sub_stat, damage, boss_damage, critical_damage, att_p, defense_ignore, final_damage, boss_defense,buff_indure_time, dealing_time):
@@ -62,17 +64,18 @@ class shadowerEnvSimple(gym.Env):
         
     def get_state(self):
         
+        ## apply approximate min max scaling
         ability = [self.main_stat/25000, self.critical_damage/60,
                    (self.damage + self.boss_damage )/250, self.att_p/100,
                    self.final_damage/50]
         
-        cool_time = [self.sonic_blow_cool_time/(22.5*self.FRAME), 
-                     self.slash_shadow_formation_cool_time/(45*self.FRAME),
-                     self.incision_cool_time/(10*self.FRAME),
-                     self.vail_of_shadow_cool_time/(30*self.FRAME),
-                     self.smoke_shell_cool_time/(75*self.FRAME),
-                     self.epic_adventure_cool_time/(60*self.FRAME),
-                     self.ultimate_dark_sight_cool_time/(90*self.FRAME)]
+        cool_time = [self.sonic_blow_cool_time/(45*self.FRAME), 
+                     self.slash_shadow_formation_cool_time/(90*self.FRAME),
+                     self.incision_cool_time/(20*self.FRAME),
+                     self.vail_of_shadow_cool_time/(60*self.FRAME),
+                     self.smoke_shell_cool_time/(150*self.FRAME),
+                     self.epic_adventure_cool_time/(120*self.FRAME),
+                     self.ultimate_dark_sight_cool_time/(190*self.FRAME)]
         
         self.state = ability+ cool_time
     def reset(self):
@@ -162,10 +165,10 @@ class shadowerEnvSimple(gym.Env):
             if self.vail_of_shadow_activation_time in vail_of_shadow_att_frame:
                 ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 800,
                                 'critical_damage': self.critical_damage, 'damage': self.damage, 'att_p': self.att_p,
-                                'boss_damage' : self.boss_damage, 'defense_ignore': self.defense_ignore_calculator([self.defense_ignore, 20]),
+                                'boss_damage' : self.boss_damage, 'defense_ignore': defense_ignore_calculator([self.defense_ignore, 20]),
                                 'final_damage': self.final_damage,
                                 'core_final_damage': 120, 'boss_defense' : self.boss_defense,'critical' : True}
-                line_damage = self.skill_damage_calculator(ability_dict)
+                line_damage = skill_damage_calculator(ability_dict)
                 self.step_reward += line_damage + 0.7* line_damage 
                 
         if self.weaponpuff_ring_activation_time == 1:
@@ -184,26 +187,26 @@ class shadowerEnvSimple(gym.Env):
             
              
         if self.ready_to_die_activation_time == 1:
-            self.final_damage = self.final_damage_applier(self.final_damage, 36, activation = False)
+            self.final_damage = final_damage_applier(self.final_damage, 36, activation = False)
             
         
         
         if self.ultimate_dark_sight_activation_time == 1:
-            self.final_damage = self.final_damage_applier(self.final_damage, 31, activation = False)
+            self.final_damage = final_damage_applier(self.final_damage, 31, activation = False)
             if (self.vail_of_shadow_activation_time>1 ) or (self.smoke_shell_activation_time>1 ):
-                self.final_damage = self.final_damage_applier(self.final_damage, 15, activation = True)
+                self.final_damage = final_damage_applier(self.final_damage, 15, activation = True)
         
         if self.vail_of_shadow_activation_time == 1 :
             if (self.ultimate_dark_sight_activation_time >1) or (self.smoke_shell_activation_time>1) :
                 pass
             else:
-                self.final_damage = self.final_damage_applier(self.final_damage, 15, activation = False)
+                self.final_damage = final_damage_applier(self.final_damage, 15, activation = False)
         
         if self.smoke_shell_activation_time == 1 :
             if (self.vail_of_shadow_activation_time>1) or (self.ultimate_dark_sight_activation_time >1) :
                 pass
             else:
-                self.final_damage = self.final_damage_applier(self.final_damage, 15, activation = False)
+                self.final_damage = final_damage_applier(self.final_damage, 15, activation = False)
                 
                 
         if self.smoke_shell_activation_time == 1:
@@ -250,7 +253,6 @@ class shadowerEnvSimple(gym.Env):
         if self.incision_cool_time > 0:
             self.step_reward += self.penalty 
             return None
-        self.delay = self.att_skill_delay(0.93*self.FRAME)
         num_of_att = 35
         
         ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 1350,
@@ -258,11 +260,11 @@ class shadowerEnvSimple(gym.Env):
                         'boss_damage' : self.boss_damage , 'defense_ignore': 100,
                         'final_damage': self.final_damage,
                         'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-        line_damage = self.skill_damage_calculator(ability_dict)
+        line_damage = skill_damage_calculator(ability_dict)
         
         self.step_reward += line_damage*num_of_att + line_damage*num_of_att*0.7 
         
-        self.incision_cool_time = self.cool_time_modifier(20*self.FRAME, 5)
+        self.incision_cool_time = cool_time_modifier(20*self.FRAME, 5)
         
     def sonic_blow(self):
         if self.sonic_blow_cool_time > 0:
@@ -273,9 +275,9 @@ class shadowerEnvSimple(gym.Env):
                       'critical_damage': self.critical_damage, 'damage': self.damage, 'att_p': self.att_p,
                       'boss_damage' : self.boss_damage, 'defense_ignore': 100, 'final_damage': self.final_damage,
                       'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-        line_damage = self.skill_damage_calculator(ability_dict)
+        line_damage = skill_damage_calculator(ability_dict)
         self.step_reward += 7*15* line_damage + 7*15*0.7* line_damage
-        self.sonic_blow_cool_time = self.cool_time_modifier(45*self.FRAME, 5)
+        self.sonic_blow_cool_time = cool_time_modifier(45*self.FRAME, 5)
     
     def slash_shadow_formation(self): 
         if self.slash_shadow_formation_cool_time > 0:
@@ -286,54 +288,37 @@ class shadowerEnvSimple(gym.Env):
                     'critical_damage': self.critical_damage, 'damage': self.damage, 'att_p': self.att_p,
                     'boss_damage' : self.boss_damage, 'defense_ignore': 100, 'final_damage': self.final_damage,
                     'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-        line_damage = self.skill_damage_calculator(ability_dict)
+        line_damage = skill_damage_calculator(ability_dict)
         self.step_reward += 8*12* line_damage
         ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 1375,
                     'critical_damage': self.critical_damage, 'damage': self.damage, 'att_p': self.att_p,
                     'boss_damage' : self.boss_damage, 'defense_ignore': 100, 'final_damage': self.final_damage,
                     'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-        line_damage = self.skill_damage_calculator(ability_dict)
+        line_damage = skill_damage_calculator(ability_dict)
         self.step_reward += 60* line_damage
 
-        self.slash_shadow_formation_cool_time = self.cool_time_modifier(90*self.FRAME, 5)
+        self.slash_shadow_formation_cool_time = cool_time_modifier(90*self.FRAME, 5)
         return None
         
-    def ready_to_die(self): #쿨타임/ 지속시간내 발동 추가 
-        # if (self.delay > 0) or (self.ready_to_die_cool_time >0):
-        #     # ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 1100,
-        #     #             'critical_damage': self.critical_damage, 'damage': self.damage, 'att_p': self.att_p,
-        #     #             'boss_damage' : self.boss_damage, 'defense_ignore': 100, 'final_damage': self.final_damage,
-        #     #             'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-        #     # line_damage = skill_damage_calculator(ability_dict)
-        #     # self.step_reward -= 1130.5/(45*self.FRAME)* line_damage # 소닉블로우에 대한 암암메의 프레임당 기대데미지  
-        #     return None 
-        
+    def ready_to_die(self):         
         self.ready_to_die_activation_time = 15 * self.FRAME
-        self.final_damage = self.final_damage_applier(self.final_damage, 36)
-        self.ready_to_die_cool_time = self.cool_time_modifier(75*self.FRAME, 5)
+        self.final_damage = final_damage_applier(self.final_damage, 36)
+        self.ready_to_die_cool_time = cool_time_modifier(75*self.FRAME, 5)
         self.current_skill = 'ready_to_die'
         return None
             
     
     def soul_contract(self):
-        # if self.soul_contract_cool_time > 0 or self.delay > 0:
-        #     # ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 1100,
-        #     #             'critical_damage': self.critical_damage, 'damage': self.damage, 'att_p': self.att_p,
-        #     #             'boss_damage' : self.boss_damage, 'defense_ignore': 100, 'final_damage': self.final_damage,
-        #     #             'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-        #     # line_damage = skill_damage_calculator(ability_dict)
-        #     # self.step_reward -= 1130.5/(45*self.FRAME)* line_damage # 소닉블로우에 대한 암암메의 프레임당 기대데미지  
-        #     return None
         self.current_skill = 'soul_contract'
-        self.soul_contract_activation_time = self.buff_time_modifier(10, self.buff_indure_time)
+        self.soul_contract_activation_time = buff_time_modifier(10, self.buff_indure_time)
         self.damage = self.damage + 45
-        self.soul_contract_cool_time = self.cool_time_modifier(90*self.FRAME, 5)
+        self.soul_contract_cool_time = cool_time_modifier(90*self.FRAME, 5)
         return None
     
     def maple_world_goddess_blessing(self):
         self.current_skill = 'maple_world_goddess_blessing'
         self.maple_world_goddess_blessing_activation_time = 60*self.FRAME
-        self.maple_world_goddess_blessing_cool_time = self.cool_time_modifier(180*self.FRAME, 5)
+        self.maple_world_goddess_blessing_cool_time = cool_time_modifier(180*self.FRAME, 5)
         self.damage = self.damage + 20
         self.main_stat = self.main_stat + 4265
         return None
@@ -367,14 +352,14 @@ class shadowerEnvSimple(gym.Env):
     def ultimate_dark_sight(self):
         self.current_skill = 'ultimate_dark_sight'
         self.ultimate_dark_sight_activation_time = 30*self.FRAME
-        self.ultimate_dark_sight_cool_time = self.cool_time_modifier(190*self.FRAME, 5)  
+        self.ultimate_dark_sight_cool_time = cool_time_modifier(190*self.FRAME, 5)  
         
         
         if (self.vail_of_shadow_activation_time>0 ) or (self.smoke_shell_activation_time>0 ):
-            self.final_damage = self.final_damage_applier(self.final_damage, 15, activation = False)
-            self.final_damage = self.final_damage_applier(self.final_damage, 31, activation = True)
+            self.final_damage = final_damage_applier(self.final_damage, 15, activation = False)
+            self.final_damage = final_damage_applier(self.final_damage, 31, activation = True)
         else:
-            self.final_damage = self.final_damage_applier(self.final_damage, 31, activation = True)
+            self.final_damage = final_damage_applier(self.final_damage, 31, activation = True)
         
         return None
 
@@ -384,12 +369,12 @@ class shadowerEnvSimple(gym.Env):
             return None
         self.current_skill = 'smoke_shell'
         self.smoke_shell_activation_time = int(30.1*self.FRAME)
-        self.smoke_shell_cool_time = self.cool_time_modifier(150*self.FRAME, 5)
+        self.smoke_shell_cool_time = cool_time_modifier(150*self.FRAME, 5)
         self.critical_damage = self.critical_damage+ 20 
         if (self.vail_of_shadow_activation_time>0 ) or (self.ultimate_dark_sight_activation_time>0 ):
             return None
         else:
-            self.final_damage = self.final_damage_applier(self.final_damage, 15, activation = True)
+            self.final_damage = final_damage_applier(self.final_damage, 15, activation = True)
         return None
     
     def vail_of_shadow(self):
@@ -402,7 +387,7 @@ class shadowerEnvSimple(gym.Env):
         if (self.smoke_shell_activation_time>0 ) or (self.ultimate_dark_sight_activation_time>0 ):
             return None
         else:
-            self.final_damage = self.final_damage_applier(self.final_damage, 15, activation = True)
+            self.final_damage = final_damage_applier(self.final_damage, 15, activation = True)
         return None
 
     
@@ -412,7 +397,7 @@ class shadowerEnvSimple(gym.Env):
             
         self.current_skill = 'spyder_in_mirror'
         self.spyder_in_mirror_activation_time = int(50*self.FRAME)
-        self.spyder_in_mirror_cool_time = self.cool_time_modifier(250*self.FRAME, 5)
+        self.spyder_in_mirror_cool_time = cool_time_modifier(250*self.FRAME, 5)
         self.delay = int(0.96*self.FRAME)
         
         num_of_att= 12
@@ -421,7 +406,7 @@ class shadowerEnvSimple(gym.Env):
                         'boss_damage' : self.boss_damage , 'defense_ignore': self.defense_ignore,
                         'final_damage': self.final_damage,
                         'core_final_damage': 0, 'boss_defense' : self.boss_defense,'critical' : True}
-        line_damage = self.skill_damage_calculator(ability_dict)
+        line_damage = skill_damage_calculator(ability_dict)
         
         self.step_reward += line_damage*num_of_att
         return None
@@ -429,24 +414,24 @@ class shadowerEnvSimple(gym.Env):
     def null_action(self):
         ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 270,
                         'critical_damage': self.critical_damage, 'damage': self.damage+20, 'att_p': self.att_p,
-                        'boss_damage' : self.boss_damage+20, 'defense_ignore': self.defense_ignore_calculator([self.defense_ignore, 28]),
+                        'boss_damage' : self.boss_damage+20, 'defense_ignore': defense_ignore_calculator([self.defense_ignore, 28]),
                         'final_damage': self.final_damage,
                         'core_final_damage': 120, 'boss_defense' : self.boss_defense,'critical' : True}
-        line_damage = 6 * 1.7*self.skill_damage_calculator(ability_dict)
+        line_damage = 6 * 1.7*skill_damage_calculator(ability_dict)
 
         ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 490,
                         'critical_damage': self.critical_damage, 'damage': self.damage+20, 'att_p': self.att_p,
-                        'boss_damage' : self.boss_damage+20, 'defense_ignore': self.defense_ignore_calculator([self.defense_ignore, 28]),
-                        'final_damage': self.final_damage_applier(self.final_damage,50),
+                        'boss_damage' : self.boss_damage+20, 'defense_ignore': defense_ignore_calculator([self.defense_ignore, 28]),
+                        'final_damage': final_damage_applier(self.final_damage,50),
                         'core_final_damage': 120, 'boss_defense' : self.boss_defense,'critical' : True}
-        line_damage2 = 6* 1.7*self.skill_damage_calculator(ability_dict)
+        line_damage2 = 6* 1.7*skill_damage_calculator(ability_dict)
 
         ability_dict = {'main_stat': self.main_stat, 'sub_stat' : self.sub_stat, 'skill_damage': 100,
                         'critical_damage': self.critical_damage, 'damage': self.damage+20, 'att_p': self.att_p,
-                        'boss_damage' : self.boss_damage+ 30, 'defense_ignore': self.defense_ignore_calculator([self.defense_ignore, 20]),
+                        'boss_damage' : self.boss_damage+ 30, 'defense_ignore': defense_ignore_calculator([self.defense_ignore, 20]),
                         'final_damage': self.final_damage,
                         'core_final_damage': 180, 'boss_defense' : self.boss_defense,'critical' : True}
-        line_damage3 = 9.6*2* 1.7*self.skill_damage_calculator(ability_dict)
+        line_damage3 = 9.6*2* 1.7*skill_damage_calculator(ability_dict)
 
         # 암암메 최대 분당 타수 36을 참고하여 한번에 계산 
         self.step_reward +=  36*(line_damage + line_damage2 +line_damage3)/ (60*self.FRAME) *0.90
@@ -458,53 +443,7 @@ class shadowerEnvSimple(gym.Env):
     def close(self):
         return None
     
-    def skill_damage_calculator(self, ability_dict):
-        main_stat = ability_dict['main_stat']
-        sub_stat  = ability_dict['sub_stat']
-        skill_damage = ability_dict['skill_damage']
-        critical_damage  = ability_dict['critical_damage']
-        damage = ability_dict['damage']
-        att_p = ability_dict['att_p']
-        boss_damage = ability_dict['boss_damage']
-        defense_ignore = ability_dict['defense_ignore']
-        final_damage = ability_dict['final_damage']
-        core_final_damage = ability_dict['core_final_damage']
-        boss_defense = ability_dict['boss_defense']
-        critical = ability_dict['critical'] 
-        
-        if critical:
-            critical_constant = ((35+critical_damage)/100) +1
-        else:
-            critical_constant = 1
-        defense_modification = 1- (boss_defense* (100 - defense_ignore)/100)/100
-        
-        skill_damage = ((main_stat*4+ sub_stat) * 2582 * 1.3 * 1 /100)*(skill_damage/100)* critical_constant* ((100+att_p)/100) *\
-        ((100+damage+ boss_damage)/100) *defense_modification*((100+final_damage)/100) *((100+core_final_damage)/100)
-        return skill_damage/(10**11)
-
-    def att_skill_delay(self, delay):
-        return int((delay*3/4) //30 *30+ int((delay*3/4)%30 != 0)*30)
-
-    def final_damage_applier(self, pre_final_damage, add_final_damage, activation = True):
-        final_damage_val = 100+ pre_final_damage
-        if activation:
-            return (final_damage_val*(100+add_final_damage)/100 - 100)
-        else:
-            return (final_damage_val *100/(add_final_damage+100) - 100)
-        
-    def buff_time_modifier(self, buff_time, buff_time_endure):
-        return int(buff_time*(100+buff_time_endure)/100)
-        
-
-    def cool_time_modifier(self, cool_time, reduce_cool_time):
-        
-        return int(cool_time*(100-reduce_cool_time)/100)
-
-    def defense_ignore_calculator(self, defense_ignore_list):
-        defense = 100 
-        for di in defense_ignore_list:
-            defense = defense * (100-di)/100
-        return 100- defense
+    
     
 
     
