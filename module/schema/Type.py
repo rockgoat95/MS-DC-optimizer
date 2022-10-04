@@ -1,3 +1,4 @@
+from pickletools import int4
 from typing import Tuple
 from pydantic import BaseModel
 import numpy as np
@@ -7,14 +8,15 @@ class Ability(BaseModel):
     main_stat: int
     sub_stat: int
     damage: int
-    boss_damage : int
-    att_p : int
-    defense_ignore : int
-    critical_damage : int
-    final_damage : float
-    buff_indure_time : int
-    maple_goddess_inc : int
-    weapon_att : int
+    boss_damage: int
+    att_p: int
+    defense_ignore: float
+    critical_damage: int
+    final_damage: float
+    buff_indure_time: int
+    total_att : int
+    maple_goddess2_inc: int
+    weapon_puff_inc: int
 
     def to_list(self):
         return [
@@ -27,9 +29,147 @@ class Ability(BaseModel):
             self.critical_damage,
             self.final_damage,
             self.buff_indure_time,
-            self.maple_goddess_inc,
-            self.weapon_att
+            self.total_att,
+            self.maple_goddess2_inc,
+            self.weapon_puff_inc,
         ]
         
-# a = Ability(main_stat = 1, sub_stat = 1, damage = 1, boss_damage = 1, att_p = 1, defense_ignore = 1, critical_damage= 1, final_damage = 1, buff_indure_time= 1,
-#             maple_goddess_inc = 1, weapon_att = 1)
+    def names(self):
+        return [
+            "main_stat",
+            "sub_stat",
+            "damage",
+            "boss_damage",
+            "att_p",
+            "defense_ignore",
+            "critical_damage",
+            "final_damage",
+            "buff_indure_time",
+            "total_att",
+            "maple_goddess2_inc",
+            "weapon_puff_inc",
+        ]
+        
+class Shadower_Bufftime(BaseModel):
+    ultimate_dark_sight: int
+    ready_to_die: int
+    soul_contract: int
+    restraint_ring: int
+    weaponpuff_ring: int
+    vail_of_shadow: int
+    smoke_shell: int
+    epic_adventure: int
+    maple_world_goddess_blessing: int
+    spyder_in_mirror: int
+    dark_flare : int
+
+    def to_list(self):
+        return [
+            self.ultimate_dark_sight,
+            self.ready_to_die,
+            self.soul_contract,
+            self.restraint_ring,
+            self.weaponpuff_ring,
+            self.vail_of_shadow,
+            self.smoke_shell,
+            self.epic_adventure,
+            self.maple_world_goddess_blessing,
+            self.spyder_in_mirror,
+            self.dark_flare,
+        ]
+    
+    def step(self):
+        self.ultimate_dark_sight = max(0,self.ultimate_dark_sight-1)
+        self.ready_to_die = max(0,self.ready_to_die -1)
+        self.soul_contract = max(0,self.soul_contract -1)
+        self.restraint_ring = max(0, self.restraint_ring -1)
+        self.weaponpuff_ring = max(0, self.weaponpuff_ring -1)
+        self.vail_of_shadow = max(0, self.vail_of_shadow-1)
+        self.smoke_shell = max(0, self.smoke_shell -1)
+        self.epic_adventure = max(0, self.epic_adventure-1)
+        self.maple_world_goddess_blessing = max(0, self.maple_world_goddess_blessing-1)
+        self.spyder_in_mirror = max(0, self.spyder_in_mirror -1)
+        self.dark_flare = max(0, self.dark_flare-1)
+        
+    def names(self):
+        return [
+            "ultimate_dark_sight",
+            "ready_to_die",
+            "soul_contract",
+            "restraint_ring",
+            "weaponpuff_ring",
+            "vail_of_shadow",
+            "smoke_shell",
+            "epic_adventure",
+            "maple_world_goddess_blessing",
+            "spyder_in_mirror",
+            "dark_flare",
+        ]
+
+class Shadower_Cooltime(BaseModel):
+    ultimate_dark_sight: int
+    ready_to_die: int
+    soul_contract: int
+    restraint_ring: int
+    weaponpuff_ring: int
+    vail_of_shadow: int
+    smoke_shell: int
+    epic_adventure: int
+    maple_world_goddess_blessing: int
+    spyder_in_mirror: int
+    dark_flare : int
+    sonic_blow : int
+    slash_shadow_formation : int
+    incision : int
+     
+    def to_list(self):
+        return [
+            self.ultimate_dark_sight,
+            self.ready_to_die,
+            self.soul_contract,
+            self.restraint_ring,
+            self.weaponpuff_ring,
+            self.vail_of_shadow,
+            self.smoke_shell,
+            self.epic_adventure,
+            self.maple_world_goddess_blessing,
+            self.spyder_in_mirror,
+            self.dark_flare,
+            self.sonic_blow,
+            self.slash_shadow_formation,
+            self.incision,
+        ]
+      
+    def step(self):
+        self.ultimate_dark_sight = max(0,self.ultimate_dark_sight-1)
+        self.ready_to_die = max(0,self.ready_to_die -1)
+        self.soul_contract = max(0,self.soul_contract -1)
+        self.restraint_ring = max(0, self.restraint_ring -1)
+        self.weaponpuff_ring = max(0, self.weaponpuff_ring -1)
+        self.vail_of_shadow = max(0, self.vail_of_shadow-1)
+        self.smoke_shell = max(0, self.smoke_shell -1)
+        self.epic_adventure = max(0, self.epic_adventure-1)
+        self.maple_world_goddess_blessing = max(0, self.maple_world_goddess_blessing-1)
+        self.spyder_in_mirror = max(0, self.spyder_in_mirror -1)
+        self.dark_flare = max(0, self.dark_flare-1)  
+        self.sonic_blow = max(0, self.sonic_blow-1)
+        self.slash_shadow_formation = max(0, self.slash_shadow_formation-1)
+        self.incision = max(0, self.incision-1)
+        
+    def names(self):
+        return [
+            "ultimate_dark_sight",
+            "ready_to_die",
+            "soul_contract",
+            "restraint_ring",
+            "weaponpuff_ring",
+            "vail_of_shadow",
+            "smoke_shell",
+            "epic_adventure",
+            "maple_world_goddess_blessing",
+            "spyder_in_mirror",
+            "dark_flare",
+            "sonic_blow",
+            "slash_shadow_formation",
+            "incision",
+        ]
