@@ -2,7 +2,7 @@ import gym
 from gym import spaces, utils
 import numpy as np
 
-from common.utils import *
+from module.common.utils import *
 
 class shadowerEnvSimple(gym.Env):
     
@@ -41,10 +41,6 @@ class shadowerEnvSimple(gym.Env):
         self.delay = 0 
             
         ##stat
-        
-        
-        
-        
         
         
         self.get_state()
