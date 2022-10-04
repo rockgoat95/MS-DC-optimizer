@@ -2,9 +2,8 @@ import gym
 from gym import spaces, utils
 import numpy as np
 
-from module.common.utils import *
-
-from module.schema.Type import *
+from module.utils import *
+from module.schema.shadower import *
 
 from copy import deepcopy
 
@@ -14,11 +13,11 @@ class shadowerEnvSimple(gym.Env):
         super(shadowerEnvSimple, self).__init__()
 
         self.penalty = -0.10
-        
+
         self.ability = ability
         # for reset
         self._ability = deepcopy(ability)
-        
+
         # for learning
         self.FRAME = FRAME
 
@@ -33,7 +32,7 @@ class shadowerEnvSimple(gym.Env):
 
         self.observation_space = spaces.Box(low=0, high=4, shape=(1, self.num_of_state))
         self.action_space = spaces.Discrete(len(self.action_name))
-        
+
         self.action_name = [
             "sonic_blow",
             "slash_shadow_formation",
@@ -43,7 +42,7 @@ class shadowerEnvSimple(gym.Env):
             "epic_adventure",
             "null",
         ]
-        
+
         self.state_labels = [
             "main_stat",
             "critical_damage",
@@ -88,35 +87,35 @@ class shadowerEnvSimple(gym.Env):
 
         ## buff or time-consuming att
         self.buff_time = Shadower_Bufftime(
-            ultimate_dark_sight = 0,
-            ready_to_die = 0,
-            soul_contract = 0,
-            restraint_ring = 0,
-            weaponpuff_ring = 0,
-            vail_of_shadow = 0,
-            smoke_shell = 0,
-            epic_adventure = 0,
-            maple_world_goddess_blessing = 0,
-            spyder_in_mirror = 0,
-            dark_flare = 0,
-        ) 
-        
+            ultimate_dark_sight=0,
+            ready_to_die=0,
+            soul_contract=0,
+            restraint_ring=0,
+            weaponpuff_ring=0,
+            vail_of_shadow=0,
+            smoke_shell=0,
+            epic_adventure=0,
+            maple_world_goddess_blessing=0,
+            spyder_in_mirror=0,
+            dark_flare=0,
+        )
+
         self.cool_time = Shadower_Cooltime(
-            ultimate_dark_sight = 0,
-            ready_to_die = 0,
-            soul_contract = 0,
-            restraint_ring = 0,
-            weaponpuff_ring = 0,
-            vail_of_shadow = 0,
-            smoke_shell = 0,
-            epic_adventure = 0,
-            maple_world_goddess_blessing = 0,
-            spyder_in_mirror = 0,
-            dark_flare = 0,
-            sonic_blow = 0,
-            slash_shadow_formation = 0,
-            incision = 0,
-        ) 
+            ultimate_dark_sight=0,
+            ready_to_die=0,
+            soul_contract=0,
+            restraint_ring=0,
+            weaponpuff_ring=0,
+            vail_of_shadow=0,
+            smoke_shell=0,
+            epic_adventure=0,
+            maple_world_goddess_blessing=0,
+            spyder_in_mirror=0,
+            dark_flare=0,
+            sonic_blow=0,
+            slash_shadow_formation=0,
+            incision=0,
+        )
 
         self.get_state()
 
@@ -144,15 +143,13 @@ class shadowerEnvSimple(gym.Env):
         elif action == 6:
             self.null_action()  # 평타
 
-    
-        
         self.auto_buff()
         self.deact_buff()
         self.time_lag_attack()
-        
+
         self.cool_time.step()
         self.buff_time.step()
-        
+
         self.get_state()
         ep_done = self.current_time >= self.dealing_time
 
@@ -438,6 +435,7 @@ class shadowerEnvSimple(gym.Env):
             36 * (line_damage + line_damage2 + line_damage3) / (60 * self.FRAME) * 0.90
         )
         return None
+
     def auto_buff(self):
         # auto buff
         if self.current_time % (182 * self.FRAME) == 1:
@@ -451,9 +449,9 @@ class shadowerEnvSimple(gym.Env):
         if self.current_time % (91 * self.FRAME) == 1:
             self.ready_to_die()
             self.soul_contract()
-            
+
     def time_lag_attack(self):
-        # darksight logic 
+        # darksight logic
         if self.buff_time.vail_of_shadow > 0:
             vail_of_shadow_att_frame = [
                 int(self.FRAME * (12 - (i + 1) * 0.85)) for i in range(14)
@@ -461,14 +459,23 @@ class shadowerEnvSimple(gym.Env):
 
             if self.buff_time.vail_of_shadow in vail_of_shadow_att_frame:
                 ability_in_skill = deepcopy(self.ability)
-                ability_in_skill.defense_ignore =  defense_ignore_calculator([ability_in_skill.defense_ignore, 20])
-                line_damage = skill_damage_calculator(ability_in_skill, skill_damage= 800, boss_defense = 300, weapon_constant = 1.3)
+                ability_in_skill.defense_ignore = defense_ignore_calculator(
+                    [ability_in_skill.defense_ignore, 20]
+                )
+                line_damage = skill_damage_calculator(
+                    ability_in_skill,
+                    skill_damage=800,
+                    boss_defense=300,
+                    weapon_constant=1.3,
+                )
                 self.step_reward += line_damage + 0.7 * line_damage
 
     def deact_buff(self):
-        #buff deact 
+        # buff deact
         if self.buff_time.weaponpuff_ring == 1:
-            self.ability.main_stat = self.ability.main_stat - self.ability.weapon_puff_inc
+            self.ability.main_stat = (
+                self.ability.main_stat - self.ability.weapon_puff_inc
+            )
         if self.buff_time.restraint_ring == 1:
             self.ability.att_p = self.ability.att_p - 100
         if self.buff_time.soul_contract == 1:
@@ -477,7 +484,9 @@ class shadowerEnvSimple(gym.Env):
             self.ability.damage = self.ability.damage - 10
 
         if self.buff_time.maple_world_goddess_blessing == 1:
-            self.ability.main_stat = self.ability.main_stat - self.ability.maple_goddess2_inc
+            self.ability.main_stat = (
+                self.ability.main_stat - self.ability.maple_goddess2_inc
+            )
             self.ability.damage = self.ability.damage - 20
 
         if self.buff_time.ready_to_die == 1:
@@ -489,9 +498,7 @@ class shadowerEnvSimple(gym.Env):
             self.ability.final_damage = final_damage_applier(
                 self.ability.final_damage, 31, activation=False
             )
-            if (self.buff_time.vail_of_shadow > 1) or (
-                self.buff_time.smoke_shell > 1
-            ):
+            if (self.buff_time.vail_of_shadow > 1) or (self.buff_time.smoke_shell > 1):
                 self.ability.final_damage = final_damage_applier(
                     self.ability.final_damage, 15, activation=True
                 )
@@ -518,7 +525,7 @@ class shadowerEnvSimple(gym.Env):
 
         if self.buff_time.smoke_shell == 1:
             self.ability.critical_damage -= 20
-            
+
     def render(self, mode="human"):
         return None
 

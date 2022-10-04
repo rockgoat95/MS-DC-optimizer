@@ -7,7 +7,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from torch import nn
 
 
-# 1183 
+# 1183
 # 4746 m2 inc
 # 14878 wp inc
 FRAME = 5
@@ -23,7 +23,6 @@ damage = 118
 boss_damage = 287
 final_damage = 45
 boss_defense = 300
-
 
 
 env = shadowerEnvSimple(

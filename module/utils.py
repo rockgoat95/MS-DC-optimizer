@@ -1,5 +1,6 @@
 from module.schema.Type import Ability
 
+
 def skill_damage_calculator(
     ability: Ability,
     skill_damage: int,
@@ -35,7 +36,6 @@ def skill_damage_calculator(
     )
 
     return int(attack_damage)
-
 
 
 def att_skill_delay(delay):

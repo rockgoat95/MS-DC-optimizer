@@ -5,7 +5,7 @@ from gym import spaces, utils
 import numpy as np
 
 
-class shadowerEnvSimple(gym.Env):
+class shadowerEnv(gym.Env):
     def __init__(
         self,
         FRAME,
@@ -20,7 +20,7 @@ class shadowerEnvSimple(gym.Env):
         boss_defense,
         dealing_time,
     ):
-        super(shadowerEnvSimple, self).__init__()
+        super(shadowerEnv, self).__init__()
         # for reset
         self._main_stat = main_stat
         self._sub_stat = sub_stat
@@ -786,7 +786,7 @@ class shadowerEnvSimple(gym.Env):
             * ((100 + final_damage) / 100)
             * ((100 + core_final_damage) / 100)
         )
-        return skill_damage / (10**10)
+        return skill_damage / (10 ** 10)
 
     def att_skill_delay(self, delay):
         return int((delay * 3 / 4) // 30 * 30 + int((delay * 3 / 4) % 30 != 0) * 30)
