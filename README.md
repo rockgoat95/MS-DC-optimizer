@@ -1,2 +1,2 @@
 # MS-DC-optimizer
-Maple Story: Deal cycle optimizer using reinforcement learning
+Maple Story: Deal cycle optimizer using reinforcement learning (or optimal DPM Approximate)
