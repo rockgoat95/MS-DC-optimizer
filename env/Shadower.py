@@ -1,5 +1,8 @@
 ## 수정이 필요한 스크립트
 
+##--------------------------------------------
+## Not Used 
+##--------------------------------------------
 import gym
 from gym import spaces, utils
 import numpy as np

@@ -1,5 +1,4 @@
-from module.schema.Type import Ability
-
+from module.schema.shadower import Ability
 
 def skill_damage_calculator(
     ability: Ability,
@@ -38,16 +37,17 @@ def skill_damage_calculator(
     return int(attack_damage)
 
 
+
 def att_skill_delay(delay):
     return int((delay * 3 / 4) // 30 * 30 + int((delay * 3 / 4) % 30 != 0) * 30)
 
 
-def final_damage_applier(pre_final_damage, add_final_damage, activation=True):
+def final_damage_applier(pre_final_damage, add_final_damage):
     final_damage_val = 100 + pre_final_damage
-    if activation:
+    if add_final_damage >= 0 :
         return final_damage_val * (100 + add_final_damage) / 100 - 100
     else:
-        return final_damage_val * 100 / (add_final_damage + 100) - 100
+        return final_damage_val * 100 / (-add_final_damage + 100) - 100
 
 
 def buff_time_modifier(buff_time, buff_time_endure):

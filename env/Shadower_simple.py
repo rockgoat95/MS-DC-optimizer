@@ -459,9 +459,7 @@ class shadowerEnvSimple(gym.Env):
 
             if self.buff_time.vail_of_shadow in vail_of_shadow_att_frame:
                 ability_in_skill = deepcopy(self.ability)
-                ability_in_skill.defense_ignore = defense_ignore_calculator(
-                    [ability_in_skill.defense_ignore, 20]
-                )
+                ability_in_skill.add(defense_ignore = 20)
                 line_damage = skill_damage_calculator(
                     ability_in_skill,
                     skill_damage=800,
@@ -477,23 +475,17 @@ class shadowerEnvSimple(gym.Env):
                 self.ability.main_stat - self.ability.weapon_puff_inc
             )
         if self.buff_time.restraint_ring == 1:
-            self.ability.att_p = self.ability.att_p - 100
+            self.ability.add(att_p = -100)
         if self.buff_time.soul_contract == 1:
-            self.ability.damage = self.ability.damage - 45
+            self.ability.add(damage = -45)
         if self.buff_time.epic_adventure == 1:
-            self.ability.damage = self.ability.damage - 10
+            self.ability.add(damage = -10)
 
         if self.buff_time.maple_world_goddess_blessing == 1:
-            self.ability.main_stat = (
-                self.ability.main_stat - self.ability.maple_goddess2_inc
-            )
-            self.ability.damage = self.ability.damage - 20
-
+            self.ability.add(main_stat = - self.ability.maple_goddess2_inc)
+            self.ability.add(damage = -20)
         if self.buff_time.ready_to_die == 1:
-            self.ability.final_damage = final_damage_applier(
-                self.ability.final_damage, 36, activation=False
-            )
-
+            self.ability.add(final_damage = -36)
         if self.buff_time.ultimate_dark_sight == 1:
             self.ability.final_damage = final_damage_applier(
                 self.ability.final_damage, 31, activation=False
