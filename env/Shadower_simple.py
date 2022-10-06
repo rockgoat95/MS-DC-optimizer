@@ -145,8 +145,10 @@ class shadowerEnvSimple(gym.Env):
 
         self.auto_buff()
         self.deact_buff()
+       
         self.time_lag_attack()
-
+        
+        # cool, buff time flowing 
         self.cool_time.step()
         self.buff_time.step()
 
@@ -160,23 +162,15 @@ class shadowerEnvSimple(gym.Env):
             self.step_reward += self.penalty
             return None
         num_of_att = 35
-
-        ability_dict = {
-            "main_stat": self.main_stat,
-            "sub_stat": self.sub_stat,
-            "skill_damage": 1350,
-            "critical_damage": self.critical_damage,
-            "damage": self.damage,
-            "att_p": self.att_p,
-            "boss_damage": self.boss_damage,
-            "defense_ignore": 100,
-            "final_damage": self.final_damage,
-            "core_final_damage": 0,
-            "boss_defense": self.boss_defense,
-            "critical": True,
-        }
-        line_damage = skill_damage_calculator(ability_dict)
-
+        
+        ability_in_skill = deepcopy(self.ablility)
+        ability_in_skill.add(defense_ignore = 100)
+        line_damage = skill_damage_calculator(
+            ability_in_skill,
+            skill_damage=1350,
+            boss_defense=300,
+            weapon_constant=1.3,
+        )
         self.step_reward += line_damage * num_of_att + line_damage * num_of_att * 0.7
 
         self.incision_cool_time = cool_time_modifier(20 * self.FRAME, 5)
@@ -246,19 +240,15 @@ class shadowerEnvSimple(gym.Env):
         return None
 
     def ready_to_die(self):
-        self.ready_to_die_activation_time = 15 * self.FRAME
-        self.final_damage = final_damage_applier(self.final_damage, 36)
-        self.ready_to_die_cool_time = cool_time_modifier(75 * self.FRAME, 5)
-        self.current_skill = "ready_to_die"
+        self.buff_time.ready_to_die = 15 * self.FRAME
+        self.ability.add(final_damage = 36)
+        self.cool_time.ready_to_die  = cool_time_modifier(75 * self.FRAME, 5)
         return None
 
     def soul_contract(self):
-        self.current_skill = "soul_contract"
-        self.soul_contract_activation_time = buff_time_modifier(
-            10, self.buff_indure_time
-        )
-        self.damage = self.damage + 45
-        self.soul_contract_cool_time = cool_time_modifier(90 * self.FRAME, 5)
+        self.buff_time.soul_contract = 15 * self.FRAME
+        self.ability.add(damage = 45)
+        self.cool_time.soul_contract  = cool_time_modifier(90 * self.FRAME, 5)
         return None
 
     def maple_world_goddess_blessing(self):
