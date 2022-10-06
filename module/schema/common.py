@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from module.utils import *
 
+
 class Ability(BaseModel):
     main_stat: int
     sub_stat: int
@@ -46,30 +47,33 @@ class Ability(BaseModel):
             "maple_goddess2_inc",
             "weapon_puff_inc",
         ]
-    
-    def add(self, 
-            main_stat = 0,
-            sub_stat = 0,
-            damage = 0,
-            boss_damage =0,
-            att_p = 0,
-            defense_ignore = 0,
-            critical_damage = 0,
-            final_damage = 0,
-            buff_indure_time = 0,
-            total_att = 0,
-            maple_goddess2_inc = 0,
-            weapon_puff_inc = 0
-            ):
-        
+
+    def add(
+        self,
+        main_stat=0,
+        sub_stat=0,
+        damage=0,
+        boss_damage=0,
+        att_p=0,
+        defense_ignore=0,
+        critical_damage=0,
+        final_damage=0,
+        buff_indure_time=0,
+        total_att=0,
+        maple_goddess2_inc=0,
+        weapon_puff_inc=0,
+    ):
+
         self.main_stat += main_stat
         self.sub_stat += sub_stat
         self.damage += damage
         self.boss_damage += boss_damage
         self.att_p += att_p
-        self.defense_ignore = defense_ignore_calculator([self.defense_ignore, defense_ignore])
+        self.defense_ignore = defense_ignore_calculator(
+            [self.defense_ignore, defense_ignore]
+        )
         self.critical_damage += critical_damage
-        self.final_damage = final_damage_applier(self.final_damage , final_damage)
+        self.final_damage = final_damage_applier(self.final_damage, final_damage)
         self.buff_indure_time += buff_indure_time
         self.total_att += total_att
         self.maple_goddess2_inc += maple_goddess2_inc
