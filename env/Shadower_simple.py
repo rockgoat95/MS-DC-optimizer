@@ -30,38 +30,6 @@ class shadowerEnvSimple(gym.Env):
         self.weapon_constant = 1.3
         self.boss_defense = boss_defense
 
-        ## buff or time-consuming att
-        self.buff_time = Shadower_Bufftime(
-            ultimate_dark_sight=0,
-            ready_to_die=0,
-            soul_contract=0,
-            restraint_ring=0,
-            weaponpuff_ring=0,
-            vail_of_shadow=0,
-            smoke_shell=0,
-            epic_adventure=0,
-            maple_world_goddess_blessing=0,
-            spyder_in_mirror=0,
-            dark_flare=0,
-        )
-
-        self.cool_time = Shadower_Cooltime(
-            ultimate_dark_sight=0,
-            ready_to_die=0,
-            soul_contract=0,
-            restraint_ring=0,
-            weaponpuff_ring=0,
-            vail_of_shadow=0,
-            smoke_shell=0,
-            epic_adventure=0,
-            maple_world_goddess_blessing=0,
-            spyder_in_mirror=0,
-            dark_flare=0,
-            sonic_blow=0,
-            slash_shadow_formation=0,
-            incision=0,
-        )
-
         # for learning
         self.FRAME = FRAME
 
@@ -70,11 +38,13 @@ class shadowerEnvSimple(gym.Env):
 
         self.dealing_time = dealing_time * FRAME  # 딜 타임 * 프레임 수
 
+        self.reset()
+        
         self.update_state()
 
         self.num_of_state = len(self.state)
 
-        self.observation_space = spaces.Box(low=0, high=4, shape=(1, self.num_of_state))
+        self.observation_space = spaces.Box(low=0, high=1, shape=(1, self.num_of_state))
         self.action_space = spaces.Discrete(len(self.action_name))
 
         self.action_name = [
@@ -140,9 +110,9 @@ class shadowerEnvSimple(gym.Env):
             self.cool_time.spyder_in_mirror / cool_time_modifier(250 * self.FRAME, 5),
         ]
 
-        self.state = ability_state + cool_time_state
+        self.state = np.array(ability_state + cool_time_state)
 
-    def reset(self):
+    def reset(self, _return = True):
         self.current_time = 0
 
         self.ability = deepcopy(self._ability)
@@ -180,8 +150,8 @@ class shadowerEnvSimple(gym.Env):
         )
 
         self.update_state()
-
-        return self.state
+        if _return :
+           return self.state
 
     def step(self, action):
 
