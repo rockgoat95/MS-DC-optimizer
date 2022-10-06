@@ -115,7 +115,7 @@ class shadowerEnvSimple(gym.Env):
                 self.ability.damage
                 + self.ability.boss_damage
                 - self._ability.damage
-                + self._ability.boss_damage
+                - self._ability.boss_damage
             )
             / 75,
             (self.ability.att_p - self._ability.att_p) / 100,
