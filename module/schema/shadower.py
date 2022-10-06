@@ -59,7 +59,6 @@ class Shadower_Bufftime(BaseModel):
             "dark_flare",
         ]
 
-
 class Shadower_Cooltime(BaseModel):
     ultimate_dark_sight: int
     ready_to_die: int
@@ -111,7 +110,7 @@ class Shadower_Cooltime(BaseModel):
         self.sonic_blow = max(0, self.sonic_blow - 1)
         self.slash_shadow_formation = max(0, self.slash_shadow_formation - 1)
         self.incision = max(0, self.incision - 1)
-
+        
     def names(self):
         return [
             "ultimate_dark_sight",
