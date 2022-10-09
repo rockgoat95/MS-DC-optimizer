@@ -23,7 +23,7 @@ dealing_time = 360
 nobless = True
 doping = True
 
-epi_num = 1000  # 최대 에피소드 설정
+epi_num = 3000  # 최대 에피소드 설정
 
 
 # 스펙계산기 이용 후 입력 
@@ -45,7 +45,8 @@ config = {
     "policy_type": "MlpPolicy",
     "total_timesteps": dealing_time * FRAME * epi_num,
     "env_name": "Shadower",
-    "learning_rate" : 1e4
+    "learning_rate" : "custom scheduler 4e-4 -> 2e-5"
+    
 }
 
 
@@ -72,6 +73,11 @@ env = gym.wrappers.RecordEpisodeStatistics(env)
 env.reset()
 
 
+def linear_schedule(initial_value) -> Callable[[float], float]:
+    def func(progress_remaining: float) -> float:
+        return initial_value * (progress_remaining*0.95 + 0.05)
+    return func
+
 policy_kwargs = dict(activation_fn=nn.ReLU, net_arch=[dict(pi=[400, 300], vf=[400, 300])])
 
 
@@ -79,7 +85,7 @@ model = sb3.PPO(
     config["policy_type"],
     env,
     verbose=1,
-    learning_rate=config["learning_rate"],
+    learning_rate=linear_schedule(4e-4),
     gamma=0.99,
     gae_lambda=0.95,
     clip_range=0.1,
@@ -93,3 +99,5 @@ model.learn(total_timesteps=dealing_time * FRAME * epi_num,
         verbose=2,
         
     ))  
+
+wandb.finish()
