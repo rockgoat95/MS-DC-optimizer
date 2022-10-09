@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from module.utils import *
+from module import utils
 
 
 class Ability(BaseModel):
@@ -69,11 +69,11 @@ class Ability(BaseModel):
         self.damage += damage
         self.boss_damage += boss_damage
         self.att_p += att_p
-        self.defense_ignore = defense_ignore_calculator(
+        self.defense_ignore = utils.defense_ignore_calculator(
             [self.defense_ignore, defense_ignore]
         )
         self.critical_damage += critical_damage
-        self.final_damage = final_damage_applier(self.final_damage, final_damage)
+        self.final_damage = utils.final_damage_applier(self.final_damage, final_damage)
         self.buff_indure_time += buff_indure_time
         self.total_att += total_att
         self.maple_goddess2_inc += maple_goddess2_inc

@@ -1,2 +1,5 @@
 model/
 /test.ipynb
+runs/
+/test.py
+wandb/

@@ -8,7 +8,7 @@ from module.schema.shadower import *
 from copy import deepcopy
 
 
-class shadowerEnvSimple(gym.Env):
+class ShadowerEnvSimple(gym.Env):
     def __init__(
         self,
         FRAME,
@@ -17,9 +17,11 @@ class shadowerEnvSimple(gym.Env):
         dealing_time,
         common_attack_rate=0.9,
         reward_divider=1e9,
+        test=False,
     ):
-        super(shadowerEnvSimple, self).__init__()
+        super(ShadowerEnvSimple, self).__init__()
 
+        self.test = test
         self.penalty = -0.10
         self.reward_divider = reward_divider
 
@@ -38,14 +40,11 @@ class shadowerEnvSimple(gym.Env):
 
         self.dealing_time = dealing_time * FRAME  # 딜 타임 * 프레임 수
 
-        self.reset()
-        
-        self.update_state()
+        self.reset(return_state=False)
 
         self.num_of_state = len(self.state)
 
         self.observation_space = spaces.Box(low=0, high=1, shape=(1, self.num_of_state))
-        self.action_space = spaces.Discrete(len(self.action_name))
 
         self.action_name = [
             "sonic_blow",
@@ -57,6 +56,8 @@ class shadowerEnvSimple(gym.Env):
             "spyder_in_mirror",
             "null",
         ]
+
+        self.action_space = spaces.Discrete(len(self.action_name))
 
         self.state_labels = [
             "main_stat",
@@ -79,7 +80,7 @@ class shadowerEnvSimple(gym.Env):
         ## apply approximate min max scaling
         ability_state = [
             (self.ability.main_stat - self._ability.main_stat)
-            / (self._ability.weapon_puff_inc + self._ability.maple_goddess_inc),
+            / (self._ability.weapon_puff_inc + self._ability.maple_goddess2_inc),
             (self.ability.critical_damage - self._ability.critical_damage) / 20,
             (
                 self.ability.damage
@@ -112,7 +113,7 @@ class shadowerEnvSimple(gym.Env):
 
         self.state = np.array(ability_state + cool_time_state)
 
-    def reset(self, _return = True):
+    def reset(self, return_state=True):
         self.current_time = 0
 
         self.ability = deepcopy(self._ability)
@@ -150,13 +151,12 @@ class shadowerEnvSimple(gym.Env):
         )
 
         self.update_state()
-        if _return :
-           return self.state
+        if return_state:
+            return self.state
 
     def step(self, action):
 
         self.current_time += 1
-        self.delay = max(0, self.delay - 1)
 
         self.step_reward = 0
 
@@ -193,12 +193,15 @@ class shadowerEnvSimple(gym.Env):
 
         ep_done = self.current_time >= self.dealing_time
 
-        return (
-            self.state,
-            self.step_reward / self.reward_divider,
-            ep_done,
-            {self.step_reward},
-        )
+        if not self.test:
+            if self.step_reward >= 0:
+                self.step_reward /= self.reward_divider
+            else:
+                pass
+
+            return (self.state, self.step_reward, ep_done, {})
+        else:
+            return (self.state, max(0, self.step_reward), ep_done, {})
 
     def incision(self):
         if self.cool_time.incision > 0:
@@ -206,7 +209,7 @@ class shadowerEnvSimple(gym.Env):
             return None
         num_of_att = 35
 
-        ability_in_skill = deepcopy(self.ablility)
+        ability_in_skill = deepcopy(self.ability)
         ability_in_skill.add(defense_ignore=100)
         line_damage = skill_damage_calculator(
             ability_in_skill,
@@ -224,7 +227,7 @@ class shadowerEnvSimple(gym.Env):
             return None
         num_of_att = 7 * 15
 
-        ability_in_skill = deepcopy(self.ablility)
+        ability_in_skill = deepcopy(self.ability)
         ability_in_skill.add(defense_ignore=100)
         line_damage = skill_damage_calculator(
             ability_in_skill,
@@ -240,7 +243,7 @@ class shadowerEnvSimple(gym.Env):
         if self.cool_time.slash_shadow_formation > 0:
             self.step_reward += self.penalty
             return None
-        ability_in_skill = deepcopy(self.ablility)
+        ability_in_skill = deepcopy(self.ability)
         ability_in_skill.add(defense_ignore=100)
         line_damage = skill_damage_calculator(
             ability_in_skill,
@@ -250,7 +253,7 @@ class shadowerEnvSimple(gym.Env):
         )
         self.step_reward += 8 * 12 * line_damage
 
-        ability_in_skill = deepcopy(self.ablility)
+        ability_in_skill = deepcopy(self.ability)
         ability_in_skill.add(defense_ignore=100)
         line_damage = skill_damage_calculator(
             ability_in_skill,
@@ -297,22 +300,20 @@ class shadowerEnvSimple(gym.Env):
 
     def epic_adventure(self):
 
-        if self.epic_adventure_cool_time > 0:
+        if self.cool_time.epic_adventure > 0:
             self.step_reward += self.penalty
             return None
 
         self.buff_time.epic_adventure = 60 * self.FRAME
         self.ability.add(damage=10)
-        self.cool_time.epic_adventure = 120 * self.FRAME
+        self.cool_time.epic_adventure = cool_time_modifier(120 * self.FRAME, 5)
         return None
 
     def ultimate_dark_sight(self):
         self.buff_time.ultimate_dark_sight = 30 * self.FRAME
         self.cool_time.ultimate_dark_sight = cool_time_modifier(190 * self.FRAME, 5)
 
-        if (self.vail_of_shadow_activation_time > 0) or (
-            self.smoke_shell_activation_time > 0
-        ):
+        if (self.buff_time.vail_of_shadow > 0) or (self.buff_time.smoke_shell > 0):
             self.ability.add(final_damage=-15)
             self.ability.add(final_damage=31)
         else:
@@ -329,8 +330,8 @@ class shadowerEnvSimple(gym.Env):
         self.ability.add(critical_damage=20)
         self.cool_time.smoke_shell = cool_time_modifier(150 * self.FRAME, 5)
 
-        if (self.vail_of_shadow_activation_time > 0) or (
-            self.ultimate_dark_sight_activation_time > 0
+        if (self.buff_time.vail_of_shadow > 0) or (
+            self.buff_time.ultimate_dark_sight > 0
         ):
             return None
         else:
@@ -343,9 +344,7 @@ class shadowerEnvSimple(gym.Env):
             return None
         self.buff_time.vail_of_shadow = 12 * self.FRAME
         self.cool_time.vail_of_shadow = cool_time_modifier(60 * self.FRAME, 5)
-        if (self.smoke_shell_activation_time > 0) or (
-            self.ultimate_dark_sight_activation_time > 0
-        ):
+        if (self.buff_time.smoke_shell > 0) or (self.buff_time.ultimate_dark_sight > 0):
             pass
         else:
             self.ability.add(final_damage=15)
@@ -361,14 +360,14 @@ class shadowerEnvSimple(gym.Env):
         self.cool_time.spyder_in_mirror = cool_time_modifier(250 * self.FRAME, 5)
 
         line_damage = skill_damage_calculator(
-            self.ablity, 990, self.boss_defense, weapon_constant=self.weapon_constant
+            self.ability, 990, self.boss_defense, weapon_constant=self.weapon_constant
         )
 
         self.step_reward += line_damage * num_of_att
         return None
 
     def common_attack(self):
-        ability_in_skill = deepcopy(self.ablility)
+        ability_in_skill = deepcopy(self.ability)
         ability_in_skill.add(defense_ignore=28, damage=20, boss_damage=20)
         line_damage = skill_damage_calculator(
             ability_in_skill,
@@ -379,7 +378,7 @@ class shadowerEnvSimple(gym.Env):
         )
         assacination1_damage = 6 * 1.7 * line_damage
 
-        ability_in_skill = deepcopy(self.ablility)
+        ability_in_skill = deepcopy(self.ability)
         ability_in_skill.add(
             defense_ignore=28, damage=20, boss_damage=20, final_damage=50
         )
@@ -392,7 +391,7 @@ class shadowerEnvSimple(gym.Env):
         )
         assacination2_damage = 6 * 1.7 * line_damage
 
-        ability_in_skill = deepcopy(self.ablility)
+        ability_in_skill = deepcopy(self.ability)
         ability_in_skill.add(defense_ignore=20, damage=20, boss_damage=30)
         line_damage = skill_damage_calculator(
             ability_in_skill,
@@ -448,7 +447,7 @@ class shadowerEnvSimple(gym.Env):
     def check_buff_and_deact(self):
         # buff deact
         if self.buff_time.weaponpuff_ring == 1:
-            self.ability.ad(main_stat=-self.ability.weapon_puff_inc)
+            self.ability.add(main_stat=-self.ability.weapon_puff_inc)
         if self.buff_time.restraint_ring == 1:
             self.ability.add(att_p=-100)
         if self.buff_time.soul_contract == 1:

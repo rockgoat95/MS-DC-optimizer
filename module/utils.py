@@ -1,4 +1,4 @@
-from module.schema.shadower import Ability
+from module.schema.common import Ability
 
 
 def skill_damage_calculator(
