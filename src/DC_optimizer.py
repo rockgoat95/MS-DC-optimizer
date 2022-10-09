@@ -7,6 +7,8 @@ from stable_baselines3.common.utils import set_random_seed
 from stable_baselines3.common.env_util import make_vec_env
 from torch import nn
 
+import gym
+
 import wandb
 
 wandb.init(project="MS-DC-optimizer", entity="rockgoat95")
@@ -23,13 +25,32 @@ doping = True
 
 epi_num = 1000  # 최대 에피소드 설정
 
+
+# 스펙계산기 이용 후 입력 
+ability = Ability( 
+    main_stat = 42207,
+    sub_stat = 3430 + 5336,
+    damage = 118,
+    boss_damage = 287,
+    att_p = 111,
+    defense_ignore = 93.8,
+    critical_damage = 98,
+    final_damage = 45,
+    buff_indure_time = 20,
+    total_att = 2539, 
+    maple_goddess2_inc = 4746,
+    weapon_puff_inc = 14878)
+
 config = {
     "policy_type": "MlpPolicy",
     "total_timesteps": dealing_time * FRAME * epi_num,
     "env_name": "Shadower",
+    "learning_rate" : 1e4
 }
 
+
 run = wandb.init(
+    name = "Shadower",
     project="MS-DC-optimizer",
     config=config,
     sync_tensorboard=True,  # auto-upload sb3's tensorboard metrics
@@ -38,46 +59,37 @@ run = wandb.init(
 )
 
 
-ability = Ability(
-    main_stat=42207,
-    sub_stat=3430 + 5336,
-    damage=118,
-    boss_damage=287,
-    att_p=111,
-    defense_ignore=93.8,
-    critical_damage=98,
-    final_damage=45,
-    buff_indure_time=20,
-    total_att=2539,
-    maple_goddess2_inc=4746,
-    weapon_puff_inc=14878,
-)
+
 
 if nobless:
-    ability.add(damage=30, boss_damage=30, critical_damage=30)
+    ability.add(damage = 30, boss_damage = 30, critical_damage = 30)
 if doping:
-    ability.add(defense_ignore=20, boss_damage=20, total_att=60)
+    ability.add(defense_ignore = 20, boss_damage = 20, total_att = 60)
+    
 
-
-env = ShadowerEnvSimple(4, ability, 300, 360, reward_divider=1e10)
+env = ShadowerEnvSimple(5, ability, 300, 360, common_attack_rate = 0.85, reward_divider = 1e10)
+env = gym.wrappers.RecordEpisodeStatistics(env) 
 env.reset()
 
 
-policy_kwargs = dict(
-    activation_fn=nn.Tanh, net_arch=[dict(pi=[400, 300], vf=[400, 300])]
-)
+policy_kwargs = dict(activation_fn=nn.ReLU, net_arch=[dict(pi=[400, 300], vf=[400, 300])])
 
 
 model = sb3.PPO(
-    "MlpPolicy",
+    config["policy_type"],
     env,
     verbose=1,
-    learning_rate=3e-4,
+    learning_rate=config["learning_rate"],
     gamma=0.99,
-    gae_lambda=0.9,
+    gae_lambda=0.95,
     clip_range=0.1,
+    tensorboard_log=f"runs/{run.id}"
 )
 
-model.learn(total_timesteps=dealing_time * FRAME * epi_num, callback=WandbCallback())
-
-model.save("model/Shadower3")
+model.learn(total_timesteps=dealing_time * FRAME * epi_num,
+    callback = WandbCallback(
+        gradient_save_freq= 100,
+        model_save_path=f"models/{run.id}",
+        verbose=2,
+        
+    ))  

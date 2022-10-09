@@ -1,5 +1,6 @@
-model/
+models/
 /test.ipynb
 runs/
 /test.py
 wandb/
+__pycache__/
