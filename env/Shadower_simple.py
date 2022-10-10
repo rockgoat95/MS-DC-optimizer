@@ -273,7 +273,7 @@ class ShadowerEnvSimple(gym.Env):
         return None
 
     def soul_contract(self):
-        self.buff_time.soul_contract = 15 * self.FRAME
+        self.buff_time.soul_contract = buff_time_modifier(10 * self.FRAME, self.ability.buff_indure_time)
         self.ability.add(damage=45)
         self.cool_time.soul_contract = cool_time_modifier(90 * self.FRAME, 5)
         return None
@@ -482,7 +482,7 @@ class ShadowerEnvSimple(gym.Env):
                 self.ability.add(final_damage=-15)
 
         if self.buff_time.smoke_shell == 1:
-            self.ability.add(critical_damage=-15)
+            self.ability.add(critical_damage=-20)
 
     def render(self, mode="human"):
         return None

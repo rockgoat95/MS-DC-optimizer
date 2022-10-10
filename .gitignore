@@ -4,3 +4,4 @@ runs/
 /test.py
 wandb/
 __pycache__/
+best_model/
