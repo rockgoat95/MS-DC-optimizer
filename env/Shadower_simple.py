@@ -3,7 +3,7 @@ from gym import spaces, utils
 import numpy as np
 
 from module.utils import *
-from module.schema.shadower import *
+from module.schema.Shadower import *
 
 from copy import deepcopy
 
@@ -119,7 +119,7 @@ class ShadowerEnvSimple(gym.Env):
         self.ability = deepcopy(self._ability)
 
         ## buff or time-consuming att
-        self.buff_time = Shadower_Bufftime(
+        self.buff_time = ShadowerBufftime(
             ultimate_dark_sight=0,
             ready_to_die=0,
             soul_contract=0,
@@ -133,7 +133,7 @@ class ShadowerEnvSimple(gym.Env):
             dark_flare=0,
         )
 
-        self.cool_time = Shadower_Cooltime(
+        self.cool_time = ShadowerCooltime(
             ultimate_dark_sight=0,
             ready_to_die=0,
             soul_contract=0,
