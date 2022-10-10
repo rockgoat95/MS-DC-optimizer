@@ -3,6 +3,6 @@
 - job : Shadower, (To be added)
 - on-going project
 
-<img src="./res/shadower_dealcycle.png"  width="1000" height="370">
+<img src="./res/shadower_dealcycle.png"  width="1000" height="300">
 
 Colored sections are when buffs are applied.
