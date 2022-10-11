@@ -11,8 +11,6 @@ import gym
 
 import wandb
 
-wandb.init(project="MS-DC-optimizer", entity="rockgoat95")
-
 from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.callbacks import EvalCallback
 # 1183
@@ -52,7 +50,6 @@ default_config = {
 }
 
 
-
 if nobless:
     ability.add(damage = 30, boss_damage = 30, critical_damage = 30)
 if doping:
@@ -60,10 +57,9 @@ if doping:
     
 
 def train(config = None):
-    with wandb.init(config = default_config, project = "MS-DC-optimizer", entity = "rockgoat95") as run:
-        env = ShadowerEnvSimple(5, ability, 300, 360, common_attack_rate = 0.85, reward_divider = 1e10)
+    with wandb.init(config = default_config, project = "MS-DC-optimizer", entity = "rockgoat95"):
+        env = ShadowerEnvSimple(5, ability, 300, 360, common_attack_rate = 0.75, reward_divider = 2e10)
         env.reset()
-
 
         def linear_schedule(initial_value) -> Callable[[float], float]:
             def func(progress_remaining: float) -> float:
@@ -111,15 +107,12 @@ def train(config = None):
             gae_lambda=0.95,
             clip_range=wandb.config.clip_range,
             batch_size = wandb.config.batch_size,
-            n_epochs = wandb.config.n_epochs,
+            n_epochs = wandb.config.epochs,
             policy_kwargs=policy_kwargs
         )
 
-        eval_callback = EvalCallback(env, best_model_save_path="./best_models/",
-                                    log_path="./logs/", eval_freq=10,
-                                    deterministic=True, render=False)
         model.learn(total_timesteps=dealing_time * FRAME * epi_num,
-            callback = [eval_callback])  
+                    callback = WandbCallback())  
 
         obs = env.reset()
         reward = 0
@@ -132,3 +125,7 @@ def train(config = None):
 
 
 wandb.agent(sweep_id, train)
+
+
+wandb.finish()
+
