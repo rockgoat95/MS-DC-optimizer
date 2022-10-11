@@ -3,6 +3,6 @@
 - job : Shadower, (To be added)
 - on-going project
 
-<img src="./res/shadower_dealcycle.png"  width="1000" height="300">
+<img src="./res/shadower_dealcycle.png">
 
-Colored sections are when buffs are applied.
+Colored sections are when buffs are applied (ready to die, soul contract, maple goddess blessing, etc.).
