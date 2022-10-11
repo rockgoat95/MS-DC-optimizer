@@ -1,79 +1,57 @@
-import pandas as pd
-from env.Shadower_simple import shadowerEnvSimple
-from env.Shadower import shadowerEnv
+from env.Shadower_simple import ShadowerEnvSimple
+from env.ability.Shadower import * 
 
-from torch import nn
 import stable_baselines3 as sb3
-from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
-from stable_baselines3.common.utils import set_random_seed
-from stable_baselines3.common.env_util import make_vec_env
+from torch import nn
+
+import pandas as pd
 
 from copy import deepcopy
 
+import gym
+
+# 1183
+# 4746 m2 inc
+# 14878 wp inc
 FRAME = 5
-
-preprocess_function = None
-att_p = 111
-defense_ignore = 94.17
-critical_damage = 126
-main_stat = 39433
-sub_stat = 3303 + 4998
-damage = 148
-boss_damage = 340
-final_damage = 43.75
-boss_defense = 300
 dealing_time = 360
-env = shadowerEnvSimple(
-    FRAME,
-    main_stat,
-    sub_stat,
-    damage,
-    boss_damage,
-    critical_damage,
-    att_p,
-    defense_ignore,
-    final_damage,
-    boss_defense,
-    dealing_time,
-)
+nobless = True
+doping = True
 
-policy_kwargs = dict(activation_fn=nn.Tanh, net_arch=[dict(pi=[64, 64], vf=[64, 64])])
+epi_num = 3000  # 최대 에피소드 설정
 
+# 스펙계산기 이용 후 입력 
 
-model = sb3.PPO(
-    "MlpPolicy",
-    env,
-    verbose=1,
-    learning_rate=3e-4,
-    gamma=0.99,
-    gae_lambda=0.9,
-    clip_range=0.1,
-)
+if nobless:
+    ability.add(damage = 30, boss_damage = 30, critical_damage = 30)
+if doping:
+    ability.add(defense_ignore = 20, boss_damage = 20, total_att = 60)
+    
 
-model.load("model/Shadower3")
+env = ShadowerEnvSimple(5, ability, 300, 360, common_attack_rate = 0.85, reward_divider = 1e10, test = True)
+env = gym.wrappers.RecordEpisodeStatistics(env) 
+env.reset()
+
+model = sb3.PPO.load("best_model/shadower", env=env)
 
 max_score = 0
 action_list_at_max_score = []
 
-for j in range(1):
-    print(j)
-    obs = env.reset()
-    score = 0
-    df_list = []
-    action_list = []
-    for i in range(3000):
-        df_list.append(obs)
-        action, _states = model.predict([obs], deterministic=True)
-        obs, rewards, dones, info = env.step(action)
-        score += rewards
-        action_list.append(action)
-    if score > max_score:
-        max_score = deepcopy(score)
-        action_list_at_max_score = deepcopy(action_list)
-        df = pd.DataFrame(df_list, columns=env.state_labels)
 
-print(max_score)
+obs = env.reset()
+score = 0
+df_list = []
+action_list = []
+for i in range(3000):
+    df_list.append(obs)
+    action, _states = model.predict([obs], deterministic=True)
+    obs, rewards, dones, info = env.step(action)
+    score += rewards
+    action_list.append(action)
 
+obs_data = pd.DataFrame(df_list, columns = env.state_labels)
+
+### plottinh dealcycle
 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -84,28 +62,51 @@ import random
 image_list = []
 
 for i in range(7):
-    image_list.append(mpimg.imread("fig/skill" + str(i) + ".png"))
+    image_list.append(mpimg.imread("fig/shadower/skill" + str(i) + ".png"))
 
 
 fig, ax = plt.subplots()
-fig.set_size_inches(40, 10)
-ax.set_xlim([0, 3000 / 5])
+fig.set_size_inches(20, 7)
+ax.set_xlim([-20, 380])
 ax.set_ylim([0, 8])
 
-for i in range(3000):
-    if action_list_at_max_score[i] == 6:
+for i in range(360*FRAME):
+    if action_list[i] == 7:
         continue
     # if df['delay'][i] !=0:
     #     continue
     # if i > 0 and df.iloc[i-1,action_list_at_max_score[i]+5] != 0:
     #     continue
-    imagebox = OffsetImage(image_list[action_list_at_max_score[i]], zoom=1.7)
+    imagebox = OffsetImage(image_list[action_list[i]], zoom=1.2)
     ab = AnnotationBbox(
-        imagebox, (i / 5, action_list_at_max_score[i] + 1), frameon=False
+        imagebox, (i / 5+7, action_list[i] + 1), frameon=False
     )
     ax.add_artist(ab)
 
-ax.vlines(np.arange(0, 600, 95), 0, 10)
+#리레 
+for i in range(2):
+    ax.fill_between([0+182*i,15+182*i], [10,10], color = 'red', alpha = 0.3)
+    
+# 메용 2
+for i in range(2):
+    ax.fill_between([0+182*i,30+182*i], [10,10], color = 'gray', alpha = 0.3)
 
-ax.vlines(np.arange(0, 600, 95) + 10, 0, 10, color="red")
-ax.vlines(np.arange(0, 600, 95) + 30, 0, 10, color="blue")
+# 웨펖    
+for i in range(2):
+    ax.fill_between([91+182*i,91+182*i], [10,10], color = 'yellow', alpha = 0.3)
+
+# 레투다
+for i in range(4):
+    ax.fill_between([0+91*i,15+91*i], [10,10], color = 'blue', alpha = 0.3)
+# 소울 컨트랙트
+for i in range(4):
+    ax.fill_between([0+91*i,10+91*i], [10,10], color = 'pink', alpha = 0.3)
+
+ax.vlines(np.arange(0, 380, 30), 0, 10, color="gray", linestyles= 'dotted', alpha = 0.7)
+
+fig.savefig('res/shadower_dealcycle.png')
+ax.set_xlabel('time(seconds)', size = 15)
+ax.set_yticks([])
+ax.set_title('Shadower deal cycle', size = 20)
+
+plt.show()
