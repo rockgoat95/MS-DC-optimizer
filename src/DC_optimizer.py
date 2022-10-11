@@ -69,7 +69,6 @@ if doping:
     
 
 env = ShadowerEnvSimple(5, ability, 300, 360, common_attack_rate = 0.85, reward_divider = 1e10)
-env = gym.wrappers.RecordEpisodeStatistics(env) 
 env.reset()
 
 
@@ -92,12 +91,14 @@ model = sb3.PPO(
     tensorboard_log=f"runs/{run.id}"
 )
 
+eval_callback = EvalCallback(env, best_model_save_path="./best_models/",
+                             log_path="./logs/", eval_freq=10,
+                             deterministic=True, render=False)
+wandb_callback = WandbCallback(
+                            gradient_save_freq= 5,
+                            model_save_path=f"models/{run.id}",
+                            verbose=2)
 model.learn(total_timesteps=dealing_time * FRAME * epi_num,
-    callback = WandbCallback(
-        gradient_save_freq= 100,
-        model_save_path=f"models/{run.id}",
-        verbose=2,
-        
-    ))  
+    callback = [eval_callback, wandb_callback])  
 
 wandb.finish()
