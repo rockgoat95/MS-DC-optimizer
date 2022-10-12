@@ -7,12 +7,9 @@ from torch import nn
 
 from typing import Callable
 
-import gym
-
 import wandb
 
 from wandb.integration.sb3 import WandbCallback
-from stable_baselines3.common.callbacks import EvalCallback
 # 1183
 # 4746 m2 inc
 # 14878 wp inc
@@ -57,8 +54,8 @@ if doping:
     
 
 def train(config = None):
-    with wandb.init(config = default_config, project = "MS-DC-optimizer", entity = "rockgoat95"):
-        env = ShadowerEnvSimple(5, ability, 300, 360, common_attack_rate = 0.75, reward_divider = 2e10)
+    with wandb.init(config = default_config, project = "MS-DC-optimizer", entity = "rockgoat95", sync_tensorboard=True) as run :
+        env = ShadowerEnvSimple(5, ability, 300, dealing_time, common_attack_rate = 0.75, reward_divider = 2e10)
         env.reset()
 
         def linear_schedule(initial_value) -> Callable[[float], float]:
@@ -108,11 +105,15 @@ def train(config = None):
             clip_range=wandb.config.clip_range,
             batch_size = wandb.config.batch_size,
             n_epochs = wandb.config.epochs,
-            policy_kwargs=policy_kwargs
+            policy_kwargs=policy_kwargs, 
+            tensorboard_log=f"runs/{run.id}"
         )
 
         model.learn(total_timesteps=dealing_time * FRAME * epi_num,
-                    callback = WandbCallback())  
+                    callback = WandbCallback(
+                        gradient_save_freq=100,
+                        model_save_path=f"models/{run.id}",
+                        verbose=2,))  
 
         obs = env.reset()
         reward = 0
