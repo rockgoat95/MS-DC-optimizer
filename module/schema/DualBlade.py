@@ -73,7 +73,7 @@ class DualBladeCooltime(BaseModel):
             self.blade_storm,
             self.karma_fury,
             self.blade_tornado,
-            self.asura
+            self.asura,
         ]
 
     def step(self):

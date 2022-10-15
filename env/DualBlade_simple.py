@@ -26,8 +26,8 @@ class DualBladeEnvSimple(gym.Env):
         self.reward_divider = reward_divider
 
         self.ability = ability
-        # 파이널컷 상시 적용 
-        self.ability.add(final_damage = 40)
+        # 파이널컷 상시 적용
+        self.ability.add(final_damage=40)
         # for reset
         self._ability = deepcopy(ability)
         self.common_attack_rate = common_attack_rate
@@ -83,7 +83,7 @@ class DualBladeEnvSimple(gym.Env):
         self.spyder_in_mirror_att_frame = [
             frame * self.FRAME for frame in self.spyder_in_mirror_att_frame
         ]
-        
+
     def update_state(self):
 
         ## apply approximate min max scaling
@@ -222,7 +222,7 @@ class DualBladeEnvSimple(gym.Env):
             boss_defense=self.boss_defense,
             weapon_constant=self.weapon_constant,
         )
-        
+
         ability_in_skill = deepcopy(self.ability)
         ability_in_skill.add(defense_ignore=100)
         line_damage2 = skill_damage_calculator(
@@ -231,7 +231,7 @@ class DualBladeEnvSimple(gym.Env):
             boss_defense=self.boss_defense,
             weapon_constant=self.weapon_constant,
         )
-        self.step_reward += line_damage1 * 7  * 1.7
+        self.step_reward += line_damage1 * 7 * 1.7
         self.step_reward += line_damage2 * 210 * 1.7
 
         self.cool_time.blade_storm = cool_time_modifier(90 * self.FRAME, 5)
@@ -253,7 +253,7 @@ class DualBladeEnvSimple(gym.Env):
 
         self.step_reward += num_of_att * line_damage + num_of_att * 0.7 * line_damage
         self.cool_time.karma_fury = cool_time_modifier(10 * self.FRAME, 5)
-        
+
     def blade_tornado(self):
         if self.cool_time.slash_shadow_formation > 0:
             self.step_reward += self.penalty
@@ -266,7 +266,7 @@ class DualBladeEnvSimple(gym.Env):
             boss_defense=self.boss_defense,
             weapon_constant=self.weapon_constant,
         )
-        self.step_reward += 7 * line_damage *1.7
+        self.step_reward += 7 * line_damage * 1.7
 
         line_damage = skill_damage_calculator(
             ability_in_skill,
@@ -274,30 +274,31 @@ class DualBladeEnvSimple(gym.Env):
             boss_defense=self.boss_defense,
             weapon_constant=self.weapon_constant,
         )
-        self.step_reward += 24 * line_damage *1.7
+        self.step_reward += 24 * line_damage * 1.7
 
         self.cool_time.blade_tornado = cool_time_modifier(12 * self.FRAME, 5)
         return None
+
     def asura(self):
         if self.cool_time.asura > 0:
             self.step_reward += self.penalty
             return None
         ability_in_skill = deepcopy(self.ability)
         ability_in_skill.add(defense_ignore=100)
-        
+
         line_damage = skill_damage_calculator(
             ability_in_skill,
             skill_damage=693,
             boss_defense=self.boss_defense,
             weapon_constant=self.weapon_constant,
-            core_final_damage= 120,
+            core_final_damage=120,
         )
-        self.step_reward += 14 *5 * line_damage *1.7
-        
+        self.step_reward += 14 * 5 * line_damage * 1.7
+
         self.cool_time.asura = cool_time_modifier(60 * self.FRAME, 5)
 
         return None
-    
+
     def common_attack(self):
         ability_in_skill = deepcopy(self.ability)
         ability_in_skill.add(defense_ignore=49.6, damage=20)
@@ -316,15 +317,17 @@ class DualBladeEnvSimple(gym.Env):
             ability_in_skill,
             skill_damage=890,
             boss_defense=self.boss_defense,
-            weapon_constant=self.weapon_constant
+            weapon_constant=self.weapon_constant,
         )
         hunted_edge_damage = 20 * line_damage
 
         # 암암메 최대 분당 타수 36을 참고하여 한번에 계산
-        self.step_reward += phantom_blow_damage *105/(60*self.FRAME) * self.common_attack_rate
-        self.step_reward += hunted_edge_damage *4/(60*self.FRAME)
+        self.step_reward += (
+            phantom_blow_damage * 105 / (60 * self.FRAME) * self.common_attack_rate
+        )
+        self.step_reward += hunted_edge_damage * 4 / (60 * self.FRAME)
         return None
-    
+
     def ready_to_die(self):
         self.buff_time.ready_to_die = 15 * self.FRAME
         self.ability.add(final_damage=36)
@@ -332,7 +335,9 @@ class DualBladeEnvSimple(gym.Env):
         return None
 
     def soul_contract(self):
-        self.buff_time.soul_contract = buff_time_modifier(10 * self.FRAME, self.ability.buff_indure_time)
+        self.buff_time.soul_contract = buff_time_modifier(
+            10 * self.FRAME, self.ability.buff_indure_time
+        )
         self.ability.add(damage=45)
         self.cool_time.soul_contract = cool_time_modifier(90 * self.FRAME, 5)
         return None
@@ -395,14 +400,16 @@ class DualBladeEnvSimple(gym.Env):
 
         self.step_reward += line_damage * num_of_att
         return None
-    
+
     def hidden_blade(self):
         self.hidden_blade = True
-        self.buff_time.hidden_blade =  buff_time_modifier(60 * self.FRAME, self.ability.buff_indure_time)
-        self.cool_time.hidden_blade =  cool_time_modifier(90 * self.FRAME, 5)
-        self.ability.add(damage = 10)
+        self.buff_time.hidden_blade = buff_time_modifier(
+            60 * self.FRAME, self.ability.buff_indure_time
+        )
+        self.cool_time.hidden_blade = cool_time_modifier(90 * self.FRAME, 5)
+        self.ability.add(damage=10)
         return None
-    
+
     def auto_buff(self):
         # auto buff
         if self.current_time % (182 * self.FRAME) == 1:
@@ -422,9 +429,12 @@ class DualBladeEnvSimple(gym.Env):
         # darksight logic
         if self.buff_time.spyder_in_mirror > 0:
             if self.buff_time.spyder_in_mirror in self.spyder_in_mirror_att_frame:
-                line_damage = self.skill_damage_calculator(self.ability, skill_damage = 385,
+                line_damage = self.skill_damage_calculator(
+                    self.ability,
+                    skill_damage=385,
                     boss_defense=self.boss_defense,
-                    weapon_constant=self.weapon_constant, )
+                    weapon_constant=self.weapon_constant,
+                )
                 self.step_reward += 8 * line_damage
 
     def check_buff_and_deact(self):

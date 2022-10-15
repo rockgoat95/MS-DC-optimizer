@@ -96,4 +96,3 @@ class ShadowerCooltime(BaseModel):
         self.sonic_blow = max(0, self.sonic_blow - 1)
         self.slash_shadow_formation = max(0, self.slash_shadow_formation - 1)
         self.incision = max(0, self.incision - 1)
-

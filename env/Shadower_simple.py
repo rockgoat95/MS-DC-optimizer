@@ -76,16 +76,16 @@ class ShadowerEnvSimple(gym.Env):
         ]
 
         self.vail_of_shadow_att_frame = [
-                int(self.FRAME * (12 - (i + 1) * 0.85)) for i in range(14)
-            ]
-        
+            int(self.FRAME * (12 - (i + 1) * 0.85)) for i in range(14)
+        ]
+
         self.spyder_in_mirror_att_frame = []
         for k in range(50, 9, -8):
             self.spyder_in_mirror_att_frame += [k - 3 - (i + 1) for i in range(5)]
         self.spyder_in_mirror_att_frame = [
             frame * self.FRAME for frame in self.spyder_in_mirror_att_frame
         ]
-        
+
     def update_state(self):
 
         ## apply approximate min max scaling
@@ -122,7 +122,11 @@ class ShadowerEnvSimple(gym.Env):
             self.cool_time.spyder_in_mirror / cool_time_modifier(250 * self.FRAME, 5),
         ]
 
-        self.state = np.array([self.current_time/(self.dealing_time * self.FRAME)] + ability_state + cool_time_state)
+        self.state = np.array(
+            [self.current_time / (self.dealing_time * self.FRAME)]
+            + ability_state
+            + cool_time_state
+        )
 
     def reset(self, return_state=True):
         self.current_time = 0
@@ -284,7 +288,9 @@ class ShadowerEnvSimple(gym.Env):
         return None
 
     def soul_contract(self):
-        self.buff_time.soul_contract = buff_time_modifier(10 * self.FRAME, self.ability.buff_indure_time)
+        self.buff_time.soul_contract = buff_time_modifier(
+            10 * self.FRAME, self.ability.buff_indure_time
+        )
         self.ability.add(damage=45)
         self.cool_time.soul_contract = cool_time_modifier(90 * self.FRAME, 5)
         return None
@@ -450,14 +456,17 @@ class ShadowerEnvSimple(gym.Env):
                     weapon_constant=self.weapon_constant,
                 )
                 self.step_reward += line_damage + 0.7 * line_damage
-                
+
         if self.buff_time.spyder_in_mirror > 0:
             if self.buff_time.spyder_in_mirror in self.spyder_in_mirror_att_frame:
-                line_damage = skill_damage_calculator(self.ability, skill_damage = 385,
+                line_damage = skill_damage_calculator(
+                    self.ability,
+                    skill_damage=385,
                     boss_defense=self.boss_defense,
-                    weapon_constant=self.weapon_constant, )
+                    weapon_constant=self.weapon_constant,
+                )
                 self.step_reward += 8 * line_damage
-                
+
     def check_buff_and_deact(self):
         # buff deact
         if self.buff_time.weaponpuff_ring == 1:
