@@ -18,7 +18,7 @@ dealing_time = 400
 nobless = True
 doping = True
 
-epi_num = 3000  # 최대 에피소드 설정
+epi_num = 2000  # 최대 에피소드 설정
 
 
 # 스펙계산기 이용 후 입력 
@@ -29,7 +29,7 @@ sweep_configuration = {
     'metric': {'goal': 'maximize', 'name': 'reward'},
     'parameters': 
     {
-        'batch_size': {'values': [16, 32, 64, 128]},
+        'batch_size': {'values': [32, 64, 128]},
         'clip_range': {'values': [0.1, 0.2]},
         'epochs': {'values': [5, 10, 15]},
         'lr': {'values':['constant', 'scheduler1', 'scheduler2']}
@@ -52,6 +52,7 @@ if nobless:
 if doping:
     ability.add(defense_ignore = 20, boss_damage = 20, total_att = 60)
     
+best_reward = 0
 
 def train(config = None):
     with wandb.init(config = default_config, project = "MS-DC-optimizer", entity = "rockgoat95", sync_tensorboard=True) as run :
@@ -114,15 +115,21 @@ def train(config = None):
                         gradient_save_freq=100,
                         model_save_path=f"models/{run.id}",
                         verbose=2,))  
-
+        
+        
+        env = ShadowerEnvSimple(5, ability, 300, dealing_time, common_attack_rate = 0.75, reward_divider = 2e10, test = True)
         obs = env.reset()
         reward = 0
-        for i in range(epi_num*FRAME):
+        for i in range(dealing_time*FRAME):
             action, _ = model.predict([obs], deterministic=True)
             obs, reward_ ,_ ,_ = env.step(action)
             reward += reward_
             
         wandb.log({"reward": reward})
+        
+        if reward > best_reward :
+            best_reward = reward
+            model.save('best_model/shadower')
 
 
 wandb.agent(sweep_id, train)
