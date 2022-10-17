@@ -32,11 +32,10 @@ class CustomPolicy(BaseFeaturesExtractor):
             nn.LeakyReLU(0.1),
             GLU(64),
             nn.Linear(64, action_dim),
-            nn.Sigmoid()
         )
 
     def forward(self, observations: th.Tensor) -> th.Tensor:
-        return self.network(observations)
+        return self.network(nn.functional.softmax(observations))
 
 policy_kwargs = dict(
     features_extractor_class=CustomPolicy,
@@ -46,3 +45,5 @@ model = PPO("MlpPolicy", "CartPole-v1", policy_kwargs=policy_kwargs, verbose=1)
 
 model.learn(10)
 
+
+th.Tensor(a))
