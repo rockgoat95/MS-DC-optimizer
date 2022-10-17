@@ -789,7 +789,7 @@ class shadowerEnv(gym.Env):
             * ((100 + final_damage) / 100)
             * ((100 + core_final_damage) / 100)
         )
-        return skill_damage / (10**10)
+        return skill_damage / (10 ** 10)
 
     def att_skill_delay(self, delay):
         return int((delay * 3 / 4) // 30 * 30 + int((delay * 3 / 4) % 30 != 0) * 30)
