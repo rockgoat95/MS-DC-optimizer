@@ -17,14 +17,12 @@ class GLU(nn.Module):
 class CustomPolicy(BaseFeaturesExtractor):
     """
     :param observation_space: (gym.Space)
-    :param features_dim: (int) Number of features extracted.
+    :param action_dim: (int) Number of features extracted.
         This corresponds to the number of unit for the last layer.
     """
 
     def __init__(self, observation_space: gym.spaces.Box, action_dim: int):
         super(CustomPolicy, self).__init__(observation_space, action_dim)
-        # We assume CxHxW images (channels first)
-        # Re-ordering will be done by pre-preprocessing or wrapper
         n_input_channels = observation_space.shape[0]
         self.network = nn.Sequential(
             nn.Linear(n_input_channels,128),
