@@ -4,7 +4,7 @@ from env.ability.Shadower import ability
 from module.policy import DnnGluFeatureExtractor
 from module.scheduler import *
 
-
+from torch import nn
 import stable_baselines3 as sb3
 
 import wandb
@@ -33,6 +33,7 @@ sweep_configuration = {
         "clip_range": {"values": [0.1, 0.2]},
         "epochs": {"values": [5, 10, 15]},
         "lr": {"values": ["constant", "scheduler1", "scheduler2"]},
+        "network": {"values": ["MLP", "MLP-GLU"]}
     },
 }
 
@@ -46,6 +47,7 @@ default_config = {
     "clip_range": 0.1,
     "epochs": 10,
     "lr": "constant",
+    "network": "MLP"
 }
 
 
@@ -74,10 +76,16 @@ def train(config=None):
             FRAME, ability, 300, dealing_time, common_attack_rate=0.75, reward_divider=2e10
         )
         env.reset()
-        policy_kwargs = dict(
-            features_extractor_class=DnnGluFeatureExtractor,
-            features_extractor_kwargs=dict(features_dim=32),
-        )
+        
+        if wandb.config.network == "MLP":
+            policy_kwargs = dict(activation_fn=nn.LeakyReLU,
+                            net_arch=[dict(pi=[128, 64], vf=[128, 64])])
+            
+        elif wandb.config.network == "MLP-GLU"
+            policy_kwargs = dict(
+                features_extractor_class=DnnGluFeatureExtractor,
+                features_extractor_kwargs=dict(features_dim=32),
+            )
 
         if wandb.config.lr == "constant":
             lr = 4e-4
