@@ -44,7 +44,7 @@ class ShadowerEnvSimple(gym.Env):
 
         self.num_of_state = len(self.state)
 
-        self.observation_space = spaces.Box(low=0, high=1, shape=(1, self.num_of_state))
+        self.observation_space = spaces.Box(low=0, high=1, shape=( self.num_of_state,))
 
         self.action_name = [
             "sonic_blow",
