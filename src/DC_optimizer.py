@@ -47,7 +47,7 @@ default_config = {
     "clip_range": 0.1,
     "epochs": 10,
     "lr": "constant",
-    "network": "MLP"
+    "network": "MLP-GLU"
 }
 
 
@@ -72,6 +72,7 @@ def train(config=None):
         entity="rockgoat95",
         sync_tensorboard=True,
     ) as run:
+        global best_reward
         env = ShadowerEnvSimple(
             FRAME, ability, 300, dealing_time, common_attack_rate=0.75, reward_divider=2e10
         )
@@ -79,12 +80,11 @@ def train(config=None):
         
         if wandb.config.network == "MLP":
             policy_kwargs = dict(activation_fn=nn.LeakyReLU,
-                            net_arch=[dict(pi=[128, 64], vf=[128, 64])])
-            
-        elif wandb.config.network == "MLP-GLU"
+                            net_arch=[dict(pi=[256, 128], vf=[256, 128])])
+        elif wandb.config.network == "MLP-GLU":
             policy_kwargs = dict(
                 features_extractor_class=DnnGluFeatureExtractor,
-                features_extractor_kwargs=dict(features_dim=32),
+                features_extractor_kwargs=dict(features_dim=64),
             )
 
         if wandb.config.lr == "constant":
