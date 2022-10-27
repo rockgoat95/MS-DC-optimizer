@@ -3,7 +3,7 @@ from env.ability.Shadower import ability
 
 from module.policy import DnnGluFeatureExtractor
 from module.scheduler import *
-from module.load_replay import load_replay
+from module.replay import replay
 
 from torch import nn
 import stable_baselines3 as sb3
@@ -126,7 +126,7 @@ def train(config=None):
             test=True,
         )
         
-        reward = load_replay(env, model, run)
+        reward = replay(env, model, run)
 
         wandb.log({"reward": reward})
 
