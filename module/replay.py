@@ -15,7 +15,7 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import pandas as pd
 import numpy as np
 
-def load_replay(env : gym.Env, model, run : wandb.init , plot : bool = True, job : str = "shadower", get_obs : bool = False):
+def replay(env : gym.Env, model, run : wandb.init , plot : bool = True, job : str = "shadower", get_obs : bool = False):
 
     obs = env.reset()
     reward = 0
