@@ -3,6 +3,7 @@ from env.ability.Shadower import ability
 
 from module.policy import DnnGluFeatureExtractor
 from module.scheduler import *
+from module.load_replay import load_replay
 
 from torch import nn
 import stable_baselines3 as sb3
@@ -125,12 +126,7 @@ def train(config=None):
             test=True,
         )
         
-        obs = env.reset()
-        reward = 0
-        for i in range(dealing_time * FRAME):
-            action, _ = model.predict([obs], deterministic=True)
-            obs, reward_, _, _ = env.step(action)
-            reward += reward_
+        reward = load_replay(env, model, run)
 
         wandb.log({"reward": reward})
 
