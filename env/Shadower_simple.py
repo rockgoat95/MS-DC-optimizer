@@ -22,7 +22,7 @@ class ShadowerEnvSimple(gym.Env):
         super(ShadowerEnvSimple, self).__init__()
 
         self.test = test
-        self.penalty = -0.10
+        self.penalty = -0.15
         self.reward_divider = reward_divider
 
         self.ability = ability

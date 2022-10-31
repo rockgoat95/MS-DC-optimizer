@@ -6,6 +6,9 @@ from module.scheduler import *
 from module.replay import replay
 
 from torch import nn
+import torch 
+cuda = torch.device('cuda')
+
 import stable_baselines3 as sb3
 
 import wandb
@@ -107,6 +110,7 @@ def train(config=None):
             n_epochs=wandb.config.epochs,
             policy_kwargs=policy_kwargs,
             tensorboard_log=f"runs/{run.id}",
+            device = cuda,
         )
 
         model.learn(

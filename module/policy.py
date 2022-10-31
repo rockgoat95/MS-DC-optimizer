@@ -16,13 +16,13 @@ class DnnGlu(nn.Module):
         super().__init__()
         self.net = nn.Sequential(
             nn.Sequential(
-            nn.Linear(size_in,128),
+            nn.Linear(size_in,256),
+            nn.LeakyReLU(0.1),
+            GLU(256),
+            nn.LeakyReLU(0.1),
+            nn.Linear(256,128),
             nn.LeakyReLU(0.1),
             GLU(128),
-            nn.LeakyReLU(0.1),
-            nn.Linear(128,64),
-            nn.LeakyReLU(0.1),
-            GLU(64),
             nn.LeakyReLU(0.1)
         ))
         
