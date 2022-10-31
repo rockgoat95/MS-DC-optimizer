@@ -6,8 +6,8 @@ from module.scheduler import *
 from module.replay import replay
 
 from torch import nn
-import torch 
-cuda = torch.device('cuda')
+# import torch 
+# cuda = torch.device('cuda')
 
 import stable_baselines3 as sb3
 
@@ -18,13 +18,14 @@ from wandb.integration.sb3 import WandbCallback
 # 1183
 # 4746 m2 inc
 # 14878 wp inc
-FRAME = 5
+FRAME = 3
 dealing_time = 400
 nobless = True
 doping = True
 
 epi_num = 2000  # 최대 에피소드 설정
 
+# epi_num = 1
 
 # 스펙계산기 이용 후 입력
 
@@ -54,7 +55,6 @@ default_config = {
     "network": "MLP-GLU"
 }
 
-
 if nobless:
     ability.add(damage=30, boss_damage=30, critical_damage=30)
 if doping:
@@ -76,19 +76,22 @@ def train(config=None):
         entity="rockgoat95",
         sync_tensorboard=True,
     ) as run:
+        
         global best_reward
+        
         env = ShadowerEnvSimple(
             FRAME, ability, 300, dealing_time, common_attack_rate=0.75, reward_divider=2e10
         )
-        env.reset()
         
+        env.reset()
+
         if wandb.config.network == "MLP":
             policy_kwargs = dict(activation_fn=nn.LeakyReLU,
-                            net_arch=[dict(pi=[256, 128], vf=[256, 128])])
+                            net_arch=[dict(pi=[512, 256], vf=[512, 256])])
         elif wandb.config.network == "MLP-GLU":
             policy_kwargs = dict(
                 features_extractor_class=DnnGluFeatureExtractor,
-                features_extractor_kwargs=dict(features_dim=64),
+                features_extractor_kwargs=dict(features_dim=128),
             )
 
         if wandb.config.lr == "constant":
@@ -109,8 +112,7 @@ def train(config=None):
             batch_size=wandb.config.batch_size,
             n_epochs=wandb.config.epochs,
             policy_kwargs=policy_kwargs,
-            tensorboard_log=f"runs/{run.id}",
-            device = cuda,
+            device = 'cpu',
         )
 
         model.learn(
@@ -126,11 +128,11 @@ def train(config=None):
             300,
             dealing_time,
             common_attack_rate=0.75,
-            reward_divider=2e10,
+            reward_divider=3e10,
             test=True,
         )
-        
-        reward = replay(env, model, run)
+
+        reward = replay(env, model, run, FRAME = FRAME)
 
         wandb.log({"reward": reward})
 

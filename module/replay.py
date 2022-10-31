@@ -15,7 +15,7 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import pandas as pd
 import numpy as np
 
-def replay(env : gym.Env, model, run : wandb.init , plot : bool = True, job : str = "shadower", get_obs : bool = False):
+def replay(env : gym.Env, model, run : wandb.init , plot : bool = True, job : str = "shadower", get_obs : bool = False, FRAME : int = 5):
 
     obs = env.reset()
     reward = 0
@@ -52,7 +52,7 @@ def replay(env : gym.Env, model, run : wandb.init , plot : bool = True, job : st
             # if i > 0 and df.iloc[i-1,action_list_at_max_score[i]+5] != 0:
             #     continue
             imagebox = OffsetImage(image_list[action_list[i]], zoom=1.2)
-            ab = AnnotationBbox(imagebox, (i / 5 + 7, action_list[i] + 1), frameon=False)
+            ab = AnnotationBbox(imagebox, (i / FRAME + 7, action_list[i] + 1), frameon=False)
             ax.add_artist(ab)
 
         # 리레

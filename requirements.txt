@@ -1,0 +1,8 @@
+env==0.1.0
+gym==0.21.0
+matplotlib==3.6.1
+numpy==1.23.4
+pandas==1.5.1
+pydantic==1.10.2
+stable_baselines3==1.6.2
+torch==1.13.0
