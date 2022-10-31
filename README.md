@@ -1,6 +1,6 @@
 # MS-DC-optimizer
-**Maple Story**: Deal cycle optimizer using reinforcement learning (or optimal DPM Approximation)
-- job : Shadower, (To be added)
+Deal cycle optimizer using reinforcement learning (or optimal DPM Approximation) in **Maple Story**
+- job : Shadower, (Dual Blade (To be added))
 - on-going project
 
 <img src="./res/shadower_dealcycle.png">
