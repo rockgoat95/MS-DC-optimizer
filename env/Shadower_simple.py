@@ -60,6 +60,7 @@ class ShadowerEnvSimple(gym.Env):
         self.action_space = spaces.Discrete(len(self.action_name))
 
         self.state_labels = [
+            "current_time",
             "main_stat",
             "critical_damage",
             "boss_total_damage",

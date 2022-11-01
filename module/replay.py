@@ -51,8 +51,8 @@ def replay(env : gym.Env, model, run : wandb.init , plot : bool = True, job : st
             #     continue
             # if i > 0 and df.iloc[i-1,action_list_at_max_score[i]+5] != 0:
             #     continue
-            imagebox = OffsetImage(image_list[action_list[i]], zoom=1.2)
-            ab = AnnotationBbox(imagebox, (i / FRAME + 7, action_list[i] + 1), frameon=False)
+            imagebox = OffsetImage(image_list[action_list[i][0]], zoom=1.2)
+            ab = AnnotationBbox(imagebox, (i / env.FRAME + 7, action_list[i][0] + 1), frameon=False)
             ax.add_artist(ab)
 
         # 리레
