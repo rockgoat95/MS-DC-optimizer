@@ -6,11 +6,10 @@ from module.scheduler import *
 from module.replay import replay
 
 from torch import nn
-# import torch 
-# cuda = torch.device('cuda')
 
 import stable_baselines3 as sb3
-
+from stable_baselines3.common.vec_env import SubprocVecEnv
+from stable_baselines3.common.utils import set_random_seed
 import wandb
 
 from wandb.integration.sb3 import WandbCallback
@@ -25,7 +24,7 @@ doping = True
 
 epi_num = 2000  # 최대 에피소드 설정
 
-# epi_num = 1
+# epi_num = 3
 
 # 스펙계산기 이용 후 입력
 
@@ -83,8 +82,28 @@ def train(config=None):
             FRAME, ability, 300, dealing_time, common_attack_rate=0.75, reward_divider=2e10
         )
         
-        env.reset()
-
+        
+        # def make_env(env_: str, rank: int, seed: int = 0):
+        #     """
+        #     Utility function for multiprocessed env.
+            
+        #     :param env_id: (str) the environment ID
+        #     :param num_env: (int) the number of environment you wish to have in subprocesses
+        #     :param seed: (int) the inital seed for RNG
+        #     :param rank: (int) index of the subprocess
+        #     :return: (Callable)
+        #     """
+        #     def _init():
+        #         env = env_
+        #         env.seed(seed + rank)
+        #         return env
+        #     set_random_seed(seed)
+        #     return _init
+        
+        # num_cpu = 2 
+        
+        # env_ = SubprocVecEnv([make_env(env, i) for i in range(num_cpu)])
+        
         if wandb.config.network == "MLP":
             policy_kwargs = dict(activation_fn=nn.LeakyReLU,
                             net_arch=[dict(pi=[512, 256], vf=[512, 256])])
@@ -112,13 +131,13 @@ def train(config=None):
             batch_size=wandb.config.batch_size,
             n_epochs=wandb.config.epochs,
             policy_kwargs=policy_kwargs,
-            device = 'cpu',
+            device = 'cpu'
         )
 
         model.learn(
             total_timesteps=dealing_time * FRAME * epi_num,
             callback=WandbCallback(
-                gradient_save_freq=100, model_save_path=f"models/{run.id}", verbose=2,
+                gradient_save_freq=500, model_save_path=f"models/{run.id}", verbose=2,
             ),
         )
 
