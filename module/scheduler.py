@@ -1,10 +1,10 @@
 from typing import Callable
 
 def linear_schedule(initial_value) -> Callable[[float], float]:
-            def func(progress_remaining: float) -> float:
-                return initial_value * (progress_remaining * 0.95 + 0.05)
+    def func(progress_remaining: float) -> float:
+        return initial_value * (progress_remaining * 0.95 + 0.05)
 
-            return func
+    return func
 
 def descrete_schedule(epi_num) -> Callable[[float], float]:
     def func(progress_remaining: float) -> float:

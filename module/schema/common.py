@@ -48,6 +48,7 @@ class Ability(BaseModel):
             "weapon_puff_inc",
         ]
 
+    # 스탯 더하거나 빼는 기능 
     def add(
         self,
         main_stat=0,
