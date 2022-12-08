@@ -1,5 +1,6 @@
 from module.schema.common import Ability
 
+# 적용 스탯 저장 (작성자 스탯)
 ability = Ability(
     main_stat=43308,
     sub_stat=3430 + 5336,

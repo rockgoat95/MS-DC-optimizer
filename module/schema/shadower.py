@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 
+# 섀도어 버프 시간 코드 
 class ShadowerBufftime(BaseModel):
     ultimate_dark_sight: int
     ready_to_die: int
@@ -45,6 +46,7 @@ class ShadowerBufftime(BaseModel):
         self.dark_flare = max(0, self.dark_flare - 1)
 
 
+# 섀도어 쿨타임 시간 코드 
 class ShadowerCooltime(BaseModel):
     ultimate_dark_sight: int
     ready_to_die: int

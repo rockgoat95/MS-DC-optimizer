@@ -1,15 +1,26 @@
 from module.schema.common import Ability
 
 
+# 스킬 데미지 계산공식 (나제불님님 참고)
 def skill_damage_calculator(
     ability: Ability,
     skill_damage: int,
-    boss_defense: int,
+    boss_defense: int, 
     critical: bool = True,
     core_final_damage: int = 0,
     weapon_constant: int = 1,
-    job_constant: int = 1,
+    job_constant: int = 1, 
 ):
+    '''
+    ability: 능력치 
+    skill_damage: 스킬 뎀퍼 
+    boss_defense: 대상 방무  
+    critical: 크리티컬 여부 (크리 100 가정하고 크리가 적용안되는 스킬을 위한 부분 )
+    core_final_damage: 코강 최종뎀 
+    weapon_constant: 무기 상수 
+    job_constant: 직업 상수 
+    
+    '''
     if critical:
         critical_constant = ((35 + ability.critical_damage) / 100) + 1
     else:
@@ -38,11 +49,20 @@ def skill_damage_calculator(
     return int(attack_damage)
 
 
+# 스킬 딜레이 계산 (나제불님님 참고) 
 def att_skill_delay(delay):
+    '''
+    delay : ms 단위의 딜레이 
+    '''
     return int((delay * 3 / 4) // 30 * 30 + int((delay * 3 / 4) % 30 != 0) * 30)
 
-
+# 최종뎀 적용 
 def final_damage_applier(pre_final_damage, add_final_damage):
+    '''
+    pre_final_damage : 기존 최종뎀퍼 
+    add_final_damage : 추가된 최종뎀퍼 
+    
+    '''
     final_damage_val = 100 + pre_final_damage
     if add_final_damage >= 0:
         return final_damage_val * (100 + add_final_damage) / 100 - 100

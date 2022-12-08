@@ -41,7 +41,7 @@ def replay(env : gym.Env, model, run : wandb.init , plot : bool = True, job : st
 
         fig, ax = plt.subplots()
         fig.set_size_inches(20, 7)
-        ax.set_xlim([-20, 380])
+        ax.set_xlim([-20, 420])
         ax.set_ylim([0, 8])
 
         for i in range(env.FRAME * env.dealing_time):
@@ -56,11 +56,11 @@ def replay(env : gym.Env, model, run : wandb.init , plot : bool = True, job : st
             ax.add_artist(ab)
 
         # 리레
-        for i in range(2):
+        for i in range(3):
             ax.fill_between([0 + 182 * i, 15 + 182 * i], [10, 10], color="red", alpha=0.3)
 
         # 메용 2
-        for i in range(2):
+        for i in range(3):
             ax.fill_between([0 + 182 * i, 30 + 182 * i], [10, 10], color="gray", alpha=0.3)
 
         # 웨펖
@@ -68,13 +68,13 @@ def replay(env : gym.Env, model, run : wandb.init , plot : bool = True, job : st
             ax.fill_between([91 + 182 * i, 91 + 182 * i], [10, 10], color="yellow", alpha=0.3)
 
         # 레투다
-        for i in range(4):
+        for i in range(5):
             ax.fill_between([0 + 91 * i, 15 + 91 * i], [10, 10], color="blue", alpha=0.3)
         # 소울 컨트랙트
-        for i in range(4):
+        for i in range(5):
             ax.fill_between([0 + 91 * i, 10 + 91 * i], [10, 10], color="pink", alpha=0.3)
 
-        ax.vlines(np.arange(0, 380, 30), 0, 10, color="gray", linestyles="dotted", alpha=0.7)
+        ax.vlines(np.arange(0, 420, 30), 0, 10, color="gray", linestyles="dotted", alpha=0.7)
 
         fig.savefig("temp/" + job + "_dealcycle.png")
         ax.set_xlabel("time(seconds)", size=15)

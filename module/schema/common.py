@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from module import utils
 
-
+# 능력치 저장 
 class Ability(BaseModel):
     main_stat: int
     sub_stat: int
@@ -18,18 +18,18 @@ class Ability(BaseModel):
 
     def to_list(self):
         return [
-            self.main_stat,
-            self.sub_stat,
-            self.damage,
-            self.boss_damage,
-            self.att_p,
-            self.defense_ignore,
-            self.critical_damage,
-            self.final_damage,
-            self.buff_indure_time,
-            self.total_att,
-            self.maple_goddess2_inc,
-            self.weapon_puff_inc,
+            self.main_stat, # 주스탯 
+            self.sub_stat, # 부스탯 (부스탯 두개인직업은 더해서 적용 )
+            self.damage, # 데미지 
+            self.boss_damage, # 보뎀
+            self.att_p, # 공퍼 
+            self.defense_ignore, # 방무 
+            self.critical_damage, # 크뎀 
+            self.final_damage, # 최종뎀 
+            self.buff_indure_time, # 버프지속시간
+            self.total_att, # 총 공격력 (스탯계산기 참고)
+            self.maple_goddess2_inc, # 메용 2 주스탯 상승량 (이후 계산공식 도입으로 생략 )
+            self.weapon_puff_inc, # 웨펖 주스탯 상승량 (이후 계산공식 도입으로 생략 )
         ]
 
     def names(self):
@@ -71,9 +71,9 @@ class Ability(BaseModel):
         self.att_p += att_p
         self.defense_ignore = utils.defense_ignore_calculator(
             [self.defense_ignore, defense_ignore]
-        )
+        ) # 방무 공식 적용 
         self.critical_damage += critical_damage
-        self.final_damage = utils.final_damage_applier(self.final_damage, final_damage)
+        self.final_damage = utils.final_damage_applier(self.final_damage, final_damage) # 최종뎀 공식 적용 
         self.buff_indure_time += buff_indure_time
         self.total_att += total_att
         self.maple_goddess2_inc += maple_goddess2_inc

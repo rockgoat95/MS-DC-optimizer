@@ -17,9 +17,12 @@ from wandb.integration.sb3 import WandbCallback
 # 1183
 # 4746 m2 inc
 # 14878 wp inc
-FRAME = 3
+FRAME = 5
+# 400초 
 dealing_time = 400
+# 노블 적용 여부 
 nobless = True
+# 도핑 적용 여부 
 doping = True
 
 epi_num = 2000  # 최대 에피소드 설정
