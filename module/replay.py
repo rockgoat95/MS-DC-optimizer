@@ -18,20 +18,29 @@ import numpy as np
 def replay(env : gym.Env, model, run : wandb.init , plot : bool = True, job : str = "shadower", get_obs : bool = False, FRAME : int = 5):
 
     obs = env.reset()
+    
+    # 확인용 데이터 셋 만들기 및 최적화된 action순서 출력받기  
     reward = 0
     df_list = []
     action_list = []
+    
+    # 학습시에는 확률적으로 행동을 선택하지만 이 단계에서는 확률이 가장 높은 액션을 선택함 
     for i in range(env.FRAME * env.dealing_time):
+        # 상태 저장 
         df_list.append(obs)
-        action, _states = model.predict([obs], deterministic=True)
-        obs, reward_, dones, info = env.step(action)
+        # 액션 선택 
+        action, _ = model.predict([obs], deterministic=True)
+        # 이후 상태, 리워드 저장 
+        obs, reward_, _, _ = env.step(action)
+        # 리워드 합계
         reward += reward_
+        # 액션 저장 
         action_list.append(action)
-
+    
+    # 시간 순서 상태를 데이터 프레임 형태로 저장 
     obs_data = pd.DataFrame(df_list, columns=env.state_labels)
 
-    ### plotting dealcycle
-
+    ### plotting dealcycle 
     if plot:
         image_list = []
 
