@@ -14,9 +14,6 @@ import wandb
 
 from wandb.integration.sb3 import WandbCallback
 
-# 1183
-# 4746 m2 inc
-# 14878 wp inc
 FRAME = 5
 # 400초 
 dealing_time = 400
@@ -28,8 +25,6 @@ doping = True
 epi_num = 2000  # 최대 에피소드 설정
 
 # epi_num = 3
-
-# 스펙계산기 이용 후 입력
 
 sweep_configuration = {
     "method": "random",
